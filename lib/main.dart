@@ -5,7 +5,7 @@ import 'package:pro3_flutter/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized;
+  WidgetsFlutterBinding.ensureInitialized();
   // we gonna initialize the database
   await HabitDatabase.initialize();
   // and we gonna save the first launch date
