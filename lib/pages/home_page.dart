@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro3_flutter/components/my_drawer.dart';
 import 'package:pro3_flutter/components/my_habit_tile.dart';
+import 'package:pro3_flutter/components/my_heat_map.dart';
 import 'package:pro3_flutter/database/habit_database.dart';
 import 'package:pro3_flutter/models/habit.dart';
 import 'package:pro3_flutter/utils/habit_util.dart';
@@ -138,7 +139,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Colors.transparent,
         foregroundColor: Theme.of(context).colorScheme.inversePrimary,
         elevation: 0,
       ),
@@ -153,7 +154,36 @@ class _HomePageState extends State<HomePage> {
           color: Theme.of(context).colorScheme.inversePrimary,
         ),
       ),
-      body: _buildHabitList(),
+      body: ListView(children: [
+        // HEATMAP
+        _buildHeatMap(),
+        // HABIT LIST
+        _buildHabitList(),
+      ]),
+    );
+  }
+
+  Widget _buildHeatMap() {
+    // habit database
+    final habitDatabase = context.watch<HabitDatabase>();
+    // get current habits
+    List<Habit> currentHabits = habitDatabase.currentHabits;
+    // return a heatmap UI
+    return FutureBuilder<DateTime?>(
+      future: habitDatabase.getFirstLaunch(),
+      builder: (context, snapshot) {
+        // once data is availbe -> build heat map
+        if (snapshot.hasData) {
+          return MyHeatMap(
+            startDate: snapshot.data!,
+            datasets: prepareHeatMapDataset(currentHabits),
+          );
+        }
+        // handle case no data is returned
+        else {
+          return Container();
+        }
+      },
     );
   }
 
@@ -165,6 +195,8 @@ class _HomePageState extends State<HomePage> {
     // return list of habit UI
     return ListView.builder(
       itemCount: currentHabits.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
         // get each individual habit
         final habit = currentHabits[index];
