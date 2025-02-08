@@ -1,6 +1,6 @@
 // given a habit list of completin days
 
-import 'package:pro3_flutter/models/habit.dart';
+import 'package:R_HabitTracker/models/habit.dart';
 
 bool isHabitCompletedToday(List<DateTime> completedDays) {
   final today = DateTime.now();

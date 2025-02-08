@@ -1,4 +1,4 @@
-package com.example.pro3_flutter
+package com.example.R_HabitTracker
 
 import io.flutter.embedding.android.FlutterActivity
 

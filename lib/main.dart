@@ -1,7 +1,7 @@
+import 'package:R_HabitTracker/database/habit_database.dart';
+import 'package:R_HabitTracker/pages/home_page.dart';
+import 'package:R_HabitTracker/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:pro3_flutter/database/habit_database.dart';
-import 'package:pro3_flutter/pages/home_page.dart';
-import 'package:pro3_flutter/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 void main() async {

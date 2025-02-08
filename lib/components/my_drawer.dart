@@ -1,6 +1,6 @@
+import 'package:R_HabitTracker/components/my_drawer_tile.dart';
+import 'package:R_HabitTracker/pages/settings_page.dart';
 import 'package:flutter/material.dart';
-import 'package:pro3_flutter/components/my_drawer_tile.dart';
-import 'package:pro3_flutter/pages/settings_page.dart';
 
 class MyDrawer extends StatelessWidget {
   const MyDrawer({super.key});

@@ -1,6 +1,6 @@
+import 'package:R_HabitTracker/theme/dark_mode.dart';
+import 'package:R_HabitTracker/theme/light_mode.dart';
 import 'package:flutter/material.dart';
-import 'package:pro3_flutter/theme/dark_mode.dart';
-import 'package:pro3_flutter/theme/light_mode.dart';
 
 class ThemeProvider with ChangeNotifier {
   // initially lightMode.

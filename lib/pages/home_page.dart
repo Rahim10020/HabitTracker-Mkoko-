@@ -1,10 +1,10 @@
+import 'package:R_HabitTracker/components/my_drawer.dart';
+import 'package:R_HabitTracker/components/my_habit_tile.dart';
+import 'package:R_HabitTracker/components/my_heat_map.dart';
+import 'package:R_HabitTracker/database/habit_database.dart';
+import 'package:R_HabitTracker/models/habit.dart';
+import 'package:R_HabitTracker/utils/habit_util.dart';
 import 'package:flutter/material.dart';
-import 'package:pro3_flutter/components/my_drawer.dart';
-import 'package:pro3_flutter/components/my_habit_tile.dart';
-import 'package:pro3_flutter/components/my_heat_map.dart';
-import 'package:pro3_flutter/database/habit_database.dart';
-import 'package:pro3_flutter/models/habit.dart';
-import 'package:pro3_flutter/utils/habit_util.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
