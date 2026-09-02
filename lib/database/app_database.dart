@@ -5,12 +5,24 @@ import 'tables.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Habits, HabitCompletions, AppSettings])
+@DriftDatabase(tables: [Habits, HabitCompletions, Categories, AppSettings])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            // v1 -> v2: add the user-defined categories table. Habits and
+            // HabitCompletions are untouched.
+            await m.createTable(categories);
+          }
+        },
+      );
 
   static QueryExecutor _openConnection() {
     // Stores the sqlite file in the app's documents directory under the

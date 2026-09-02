@@ -48,6 +48,26 @@ class HabitCompletions extends Table {
 }
 
 // -----------------------------------------------------------------------
+// Categories
+// -----------------------------------------------------------------------
+// User-defined categories, layered on top of the fixed built-in set in
+// `utils/habit_category.dart` (kHabitCategories). The built-ins are never
+// written here — this table only ever holds the ones the user adds from
+// the habit form. `key` is stored in `Habits.category` exactly like a
+// built-in id.
+// `iconCodepoint`  a codepoint from the curated icon grid
+//                   (see utils/custom_category_options.dart), rebuilt as
+//                   IconData(iconCodepoint, fontFamily: 'MaterialIcons').
+// `colorValue`     an ARGB int from the curated color swatch.
+class Categories extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get key => text().unique()();
+  TextColumn get label => text()();
+  IntColumn get iconCodepoint => integer()();
+  IntColumn get colorValue => integer()();
+}
+
+// -----------------------------------------------------------------------
 // AppSettings
 // -----------------------------------------------------------------------
 class AppSettings extends Table {

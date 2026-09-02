@@ -1,7 +1,6 @@
 import 'package:R_HabitTracker/database/app_database.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
 import 'package:R_HabitTracker/theme/app_spacing.dart';
-import 'package:R_HabitTracker/utils/habit_category.dart';
 import 'package:R_HabitTracker/utils/streak_util.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -90,7 +89,7 @@ class _StatsPageState extends State<StatsPage> {
                 ...habits.map((habit) {
                   final completedDays = habitDatabase.completedDaysFor(habit.id);
                   final scheduledDays = parseFrequencyDays(habit.frequencyDays);
-                  final category = habitCategoryById(habit.category);
+                  final category = habitDatabase.categoryById(habit.category);
                   final current = currentStreak(completedDays, scheduledDays);
                   final best = bestStreak(completedDays, scheduledDays);
 

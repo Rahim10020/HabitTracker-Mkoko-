@@ -6,7 +6,6 @@ import 'package:R_HabitTracker/components/my_habit_tile.dart';
 import 'package:R_HabitTracker/components/my_heat_map.dart';
 import 'package:R_HabitTracker/database/app_database.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
-import 'package:R_HabitTracker/utils/habit_category.dart';
 import 'package:R_HabitTracker/utils/habit_util.dart';
 import 'package:R_HabitTracker/utils/streak_util.dart';
 import 'package:flutter/material.dart';
@@ -22,8 +21,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   void initState() {
-    // we gonna read existing habits on app startup
-    Provider.of<HabitDatabase>(context, listen: false).readHabits();
+    // we gonna read existing habits (and custom categories) on app startup
+    final habitDatabase = Provider.of<HabitDatabase>(context, listen: false);
+    habitDatabase.readHabits();
+    habitDatabase.readCategories();
     super.initState();
   }
 
@@ -158,7 +159,7 @@ class _HomePageState extends State<HomePage> {
         return MyHabitTile(
           isCompleted: isCompletedToday,
           text: habit.name,
-          category: habitCategoryById(habit.category),
+          category: habitDatabase.categoryById(habit.category),
           targetCount: habit.targetCount,
           unit: habit.unit,
           streak: currentStreak(completedDays, scheduledDays),

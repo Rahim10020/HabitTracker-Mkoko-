@@ -1,6 +1,8 @@
+import 'package:R_HabitTracker/components/new_category_sheet.dart';
+import 'package:R_HabitTracker/database/habit_database.dart';
 import 'package:R_HabitTracker/theme/app_spacing.dart';
-import 'package:R_HabitTracker/utils/habit_category.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class HabitFormResult {
   final String name;
@@ -93,6 +95,12 @@ class _HabitFormSheetState extends State<_HabitFormSheet> {
     super.dispose();
   }
 
+  Future<void> _createCategory(BuildContext context) async {
+    final key = await showNewCategorySheet(context);
+    if (key == null || !mounted) return;
+    setState(() => category = key);
+  }
+
   void _submit() {
     final name = nameController.text.trim();
     if (name.isEmpty) return;
@@ -181,29 +189,50 @@ class _HabitFormSheetState extends State<_HabitFormSheet> {
               // category
               Text('Catégorie', style: textTheme.titleLarge),
               const SizedBox(height: AppSpacing.sm),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.sm,
-                children: kHabitCategories.map((c) {
-                  final selected = category == c.id;
-                  return ChoiceChip(
-                    label: Text(c.label),
-                    avatar: Icon(c.icon,
-                        size: 16,
-                        color: selected ? Colors.white : c.color),
-                    selected: selected,
-                    onSelected: (_) => setState(() => category = c.id),
-                    selectedColor: c.color,
-                    backgroundColor: colorScheme.secondary,
-                    labelStyle: TextStyle(
-                      color: selected ? Colors.white : colorScheme.onSurface,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.full),
-                      side: BorderSide.none,
-                    ),
+              Consumer<HabitDatabase>(
+                builder: (context, habitDatabase, _) {
+                  return Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.sm,
+                    children: [
+                      ...habitDatabase.allCategories.map((c) {
+                        final selected = category == c.id;
+                        return ChoiceChip(
+                          label: Text(c.label),
+                          avatar: Icon(c.icon,
+                              size: 16,
+                              color: selected ? Colors.white : c.color),
+                          selected: selected,
+                          onSelected: (_) => setState(() => category = c.id),
+                          selectedColor: c.color,
+                          backgroundColor: colorScheme.secondary,
+                          labelStyle: TextStyle(
+                            color:
+                                selected ? Colors.white : colorScheme.onSurface,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.full),
+                            side: BorderSide.none,
+                          ),
+                        );
+                      }),
+                      ActionChip(
+                        avatar: Icon(Icons.add_rounded,
+                            size: 16, color: colorScheme.primary),
+                        label: Text(
+                          'Nouvelle catégorie',
+                          style: TextStyle(color: colorScheme.primary),
+                        ),
+                        backgroundColor: colorScheme.secondary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.full),
+                          side: BorderSide(color: colorScheme.primary),
+                        ),
+                        onPressed: () => _createCategory(context),
+                      ),
+                    ],
                   );
-                }).toList(),
+                },
               ),
               const SizedBox(height: AppSpacing.lg),
 

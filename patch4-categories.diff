@@ -1,0 +1,586 @@
+diff --git a/lib/components/habit_form_sheet.dart b/lib/components/habit_form_sheet.dart
+index 1d6bfbf..e30ee35 100644
+--- a/lib/components/habit_form_sheet.dart
++++ b/lib/components/habit_form_sheet.dart
+@@ -1,6 +1,8 @@
++import 'package:R_HabitTracker/components/new_category_sheet.dart';
++import 'package:R_HabitTracker/database/habit_database.dart';
+ import 'package:R_HabitTracker/theme/app_spacing.dart';
+-import 'package:R_HabitTracker/utils/habit_category.dart';
+ import 'package:flutter/material.dart';
++import 'package:provider/provider.dart';
+ 
+ class HabitFormResult {
+   final String name;
+@@ -93,6 +95,12 @@ class _HabitFormSheetState extends State<_HabitFormSheet> {
+     super.dispose();
+   }
+ 
++  Future<void> _createCategory(BuildContext context) async {
++    final key = await showNewCategorySheet(context);
++    if (key == null || !mounted) return;
++    setState(() => category = key);
++  }
++
+   void _submit() {
+     final name = nameController.text.trim();
+     if (name.isEmpty) return;
+@@ -181,29 +189,50 @@ class _HabitFormSheetState extends State<_HabitFormSheet> {
+               // category
+               Text('Catégorie', style: textTheme.titleLarge),
+               const SizedBox(height: AppSpacing.sm),
+-              Wrap(
+-                spacing: AppSpacing.sm,
+-                runSpacing: AppSpacing.sm,
+-                children: kHabitCategories.map((c) {
+-                  final selected = category == c.id;
+-                  return ChoiceChip(
+-                    label: Text(c.label),
+-                    avatar: Icon(c.icon,
+-                        size: 16,
+-                        color: selected ? Colors.white : c.color),
+-                    selected: selected,
+-                    onSelected: (_) => setState(() => category = c.id),
+-                    selectedColor: c.color,
+-                    backgroundColor: colorScheme.secondary,
+-                    labelStyle: TextStyle(
+-                      color: selected ? Colors.white : colorScheme.onSurface,
+-                    ),
+-                    shape: RoundedRectangleBorder(
+-                      borderRadius: BorderRadius.circular(AppRadius.full),
+-                      side: BorderSide.none,
+-                    ),
++              Consumer<HabitDatabase>(
++                builder: (context, habitDatabase, _) {
++                  return Wrap(
++                    spacing: AppSpacing.sm,
++                    runSpacing: AppSpacing.sm,
++                    children: [
++                      ...habitDatabase.allCategories.map((c) {
++                        final selected = category == c.id;
++                        return ChoiceChip(
++                          label: Text(c.label),
++                          avatar: Icon(c.icon,
++                              size: 16,
++                              color: selected ? Colors.white : c.color),
++                          selected: selected,
++                          onSelected: (_) => setState(() => category = c.id),
++                          selectedColor: c.color,
++                          backgroundColor: colorScheme.secondary,
++                          labelStyle: TextStyle(
++                            color:
++                                selected ? Colors.white : colorScheme.onSurface,
++                          ),
++                          shape: RoundedRectangleBorder(
++                            borderRadius: BorderRadius.circular(AppRadius.full),
++                            side: BorderSide.none,
++                          ),
++                        );
++                      }),
++                      ActionChip(
++                        avatar: Icon(Icons.add_rounded,
++                            size: 16, color: colorScheme.primary),
++                        label: Text(
++                          'Nouvelle catégorie',
++                          style: TextStyle(color: colorScheme.primary),
++                        ),
++                        backgroundColor: colorScheme.secondary,
++                        shape: RoundedRectangleBorder(
++                          borderRadius: BorderRadius.circular(AppRadius.full),
++                          side: BorderSide(color: colorScheme.primary),
++                        ),
++                        onPressed: () => _createCategory(context),
++                      ),
++                    ],
+                   );
+-                }).toList(),
++                },
+               ),
+               const SizedBox(height: AppSpacing.lg),
+ 
+diff --git a/b/lib/components/new_category_sheet.dart b/lib/components/new_category_sheet.dart
+new file mode 100644
+index 0000000..9957865
+--- /dev/null
++++ b/lib/components/new_category_sheet.dart
+@@ -0,0 +1,225 @@
++import 'package:R_HabitTracker/database/habit_database.dart';
++import 'package:R_HabitTracker/theme/app_spacing.dart';
++import 'package:R_HabitTracker/utils/custom_category_options.dart';
++import 'package:flutter/material.dart';
++import 'package:provider/provider.dart';
++
++/// Shows the "new category" form as a modal bottom sheet, saves it, and
++/// returns the new category's key — or null if the user cancelled.
++Future<String?> showNewCategorySheet(BuildContext context) {
++  return showModalBottomSheet<String>(
++    context: context,
++    isScrollControlled: true,
++    backgroundColor: Colors.transparent,
++    builder: (context) => const _NewCategorySheet(),
++  );
++}
++
++class _NewCategorySheet extends StatefulWidget {
++  const _NewCategorySheet();
++
++  @override
++  State<_NewCategorySheet> createState() => _NewCategorySheetState();
++}
++
++class _NewCategorySheetState extends State<_NewCategorySheet> {
++  final TextEditingController labelController = TextEditingController();
++  IconData selectedIcon = kCustomCategoryIcons.first;
++  Color selectedColor = kCustomCategoryColors.first;
++  bool saving = false;
++
++  @override
++  void dispose() {
++    labelController.dispose();
++    super.dispose();
++  }
++
++  Future<void> _save() async {
++    final label = labelController.text.trim();
++    if (label.isEmpty || saving) return;
++
++    setState(() => saving = true);
++    final key = await context.read<HabitDatabase>().addCategory(
++          label: label,
++          icon: selectedIcon,
++          color: selectedColor,
++        );
++    if (!mounted) return;
++    Navigator.pop(context, key);
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    final colorScheme = Theme.of(context).colorScheme;
++    final textTheme = Theme.of(context).textTheme;
++
++    return Padding(
++      padding: EdgeInsets.only(
++        bottom: MediaQuery.of(context).viewInsets.bottom,
++      ),
++      child: Container(
++        decoration: BoxDecoration(
++          color: colorScheme.surface,
++          borderRadius: const BorderRadius.vertical(
++            top: Radius.circular(AppRadius.xl),
++          ),
++        ),
++        padding: const EdgeInsets.fromLTRB(
++          AppSpacing.xl,
++          AppSpacing.md,
++          AppSpacing.xl,
++          AppSpacing.xl,
++        ),
++        child: SingleChildScrollView(
++          child: Column(
++            crossAxisAlignment: CrossAxisAlignment.start,
++            mainAxisSize: MainAxisSize.min,
++            children: [
++              Center(
++                child: Container(
++                  width: 40,
++                  height: 4,
++                  margin: const EdgeInsets.only(bottom: AppSpacing.lg),
++                  decoration: BoxDecoration(
++                    color: colorScheme.outline,
++                    borderRadius: BorderRadius.circular(AppRadius.full),
++                  ),
++                ),
++              ),
++              Text('Nouvelle catégorie', style: textTheme.headlineMedium),
++              const SizedBox(height: AppSpacing.lg),
++
++              // live preview
++              Row(
++                children: [
++                  Container(
++                    width: 44,
++                    height: 44,
++                    decoration: BoxDecoration(
++                      color: selectedColor.withOpacity(0.15),
++                      shape: BoxShape.circle,
++                    ),
++                    child: Icon(selectedIcon, color: selectedColor, size: 22),
++                  ),
++                  const SizedBox(width: AppSpacing.md),
++                  Expanded(
++                    child: TextField(
++                      controller: labelController,
++                      autofocus: true,
++                      decoration: InputDecoration(
++                        hintText: 'Nom de la catégorie',
++                        filled: true,
++                        fillColor: colorScheme.secondary,
++                        border: OutlineInputBorder(
++                          borderRadius: BorderRadius.circular(AppRadius.md),
++                          borderSide: BorderSide.none,
++                        ),
++                      ),
++                      onChanged: (_) => setState(() {}),
++                    ),
++                  ),
++                ],
++              ),
++              const SizedBox(height: AppSpacing.lg),
++
++              // icon grid
++              Text('Icône', style: textTheme.titleLarge),
++              const SizedBox(height: AppSpacing.sm),
++              Wrap(
++                spacing: AppSpacing.sm,
++                runSpacing: AppSpacing.sm,
++                children: kCustomCategoryIcons.map((icon) {
++                  final selected = icon == selectedIcon;
++                  return GestureDetector(
++                    onTap: () => setState(() => selectedIcon = icon),
++                    child: Container(
++                      width: 40,
++                      height: 40,
++                      decoration: BoxDecoration(
++                        shape: BoxShape.circle,
++                        color: selected
++                            ? selectedColor.withOpacity(0.2)
++                            : colorScheme.secondary,
++                        border: selected
++                            ? Border.all(color: selectedColor, width: 2)
++                            : null,
++                      ),
++                      child: Icon(
++                        icon,
++                        size: 20,
++                        color: selected
++                            ? selectedColor
++                            : colorScheme.onSurfaceVariant,
++                      ),
++                    ),
++                  );
++                }).toList(),
++              ),
++              const SizedBox(height: AppSpacing.lg),
++
++              // color swatch
++              Text('Couleur', style: textTheme.titleLarge),
++              const SizedBox(height: AppSpacing.sm),
++              Wrap(
++                spacing: AppSpacing.sm,
++                runSpacing: AppSpacing.sm,
++                children: kCustomCategoryColors.map((color) {
++                  final selected = color == selectedColor;
++                  return GestureDetector(
++                    onTap: () => setState(() => selectedColor = color),
++                    child: Container(
++                      width: 32,
++                      height: 32,
++                      decoration: BoxDecoration(
++                        shape: BoxShape.circle,
++                        color: color,
++                        border: selected
++                            ? Border.all(
++                                color: colorScheme.onSurface, width: 2)
++                            : null,
++                      ),
++                      child: selected
++                          ? const Icon(Icons.check_rounded,
++                              color: Colors.white, size: 16)
++                          : null,
++                    ),
++                  );
++                }).toList(),
++              ),
++              const SizedBox(height: AppSpacing.xl),
++
++              // save button
++              SizedBox(
++                width: double.infinity,
++                height: 52,
++                child: ElevatedButton(
++                  onPressed:
++                      labelController.text.trim().isEmpty ? null : _save,
++                  style: ElevatedButton.styleFrom(
++                    backgroundColor: colorScheme.primary,
++                    foregroundColor: Colors.white,
++                    shape: RoundedRectangleBorder(
++                      borderRadius: BorderRadius.circular(AppRadius.full),
++                    ),
++                    elevation: 0,
++                  ),
++                  child: saving
++                      ? const SizedBox(
++                          width: 20,
++                          height: 20,
++                          child: CircularProgressIndicator(
++                            strokeWidth: 2,
++                            valueColor:
++                                AlwaysStoppedAnimation(Colors.white),
++                          ),
++                        )
++                      : const Text('Créer la catégorie'),
++                ),
++              ),
++            ],
++          ),
++        ),
++      ),
++    );
++  }
++}
+diff --git a/lib/database/app_database.dart b/lib/database/app_database.dart
+index 8a0d44a..40ebafe 100644
+--- a/lib/database/app_database.dart
++++ b/lib/database/app_database.dart
+@@ -5,12 +5,24 @@ import 'tables.dart';
+ 
+ part 'app_database.g.dart';
+ 
+-@DriftDatabase(tables: [Habits, HabitCompletions, AppSettings])
++@DriftDatabase(tables: [Habits, HabitCompletions, Categories, AppSettings])
+ class AppDatabase extends _$AppDatabase {
+   AppDatabase() : super(_openConnection());
+ 
+   @override
+-  int get schemaVersion => 1;
++  int get schemaVersion => 2;
++
++  @override
++  MigrationStrategy get migration => MigrationStrategy(
++        onCreate: (m) => m.createAll(),
++        onUpgrade: (m, from, to) async {
++          if (from < 2) {
++            // v1 -> v2: add the user-defined categories table. Habits and
++            // HabitCompletions are untouched.
++            await m.createTable(categories);
++          }
++        },
++      );
+ 
+   static QueryExecutor _openConnection() {
+     // Stores the sqlite file in the app's documents directory under the
+diff --git a/lib/database/habit_database.dart b/lib/database/habit_database.dart
+index 6cb689d..6d95064 100644
+--- a/lib/database/habit_database.dart
++++ b/lib/database/habit_database.dart
+@@ -1,4 +1,5 @@
+ import 'package:R_HabitTracker/database/app_database.dart';
++import 'package:R_HabitTracker/utils/habit_category.dart';
+ import 'package:drift/drift.dart';
+ import 'package:flutter/material.dart';
+ 
+@@ -53,6 +54,72 @@ class HabitDatabase extends ChangeNotifier {
+ 
+   int progressFor(int habitId) => todayProgressByHabit[habitId] ?? 0;
+ 
++  // -------------------- CATEGORIES -----------------
++
++  // user-added categories, layered on top of the fixed kHabitCategories
++  // set. Loaded once at startup and kept in sync via readCategories().
++  final List<HabitCategory> customCategories = [];
++
++  // built-ins first, then custom ones in creation order.
++  List<HabitCategory> get allCategories => [
++        ...kHabitCategories,
++        ...customCategories,
++      ];
++
++  HabitCategory categoryById(String id) => allCategories.firstWhere(
++        (c) => c.id == id,
++        orElse: () => kHabitCategories.last, // falls back to "Autre"
++      );
++
++  Future<void> readCategories() async {
++    final rows = await db.select(db.categories).get();
++    customCategories
++      ..clear()
++      ..addAll(rows.map((r) => HabitCategory(
++            id: r.key,
++            label: r.label,
++            icon: IconData(r.iconCodepoint, fontFamily: 'MaterialIcons'),
++            color: Color(r.colorValue),
++          )));
++    notifyListeners();
++  }
++
++  // CREATE - add a custom category and return its generated key. Slugs
++  // the label into a unique key so it can be stored on Habits.category
++  // alongside the built-in ids.
++  Future<String> addCategory({
++    required String label,
++    required IconData icon,
++    required Color color,
++  }) async {
++    final baseKey = label
++        .trim()
++        .toLowerCase()
++        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
++        .replaceAll(RegExp(r'^_+|_+$'), '');
++    final existingKeys = {
++      ...kHabitCategories.map((c) => c.id),
++      ...customCategories.map((c) => c.id),
++    };
++    var key = baseKey.isEmpty ? 'custom' : baseKey;
++    var suffix = 2;
++    while (existingKeys.contains(key)) {
++      key = '${baseKey.isEmpty ? 'custom' : baseKey}_$suffix';
++      suffix++;
++    }
++
++    await db.into(db.categories).insert(
++          CategoriesCompanion.insert(
++            key: key,
++            label: label.trim(),
++            iconCodepoint: icon.codePoint,
++            colorValue: color.value,
++          ),
++        );
++    await readCategories();
++    return key;
++  }
++
+   // CREATE - add a new habit to the database
+   //
+   // category/frequency/targetCount/unit default to a simple daily on-off
+diff --git a/lib/database/tables.dart b/lib/database/tables.dart
+index 2260630..4f07749 100644
+--- a/lib/database/tables.dart
++++ b/lib/database/tables.dart
+@@ -47,6 +47,26 @@ class HabitCompletions extends Table {
+       ];
+ }
+ 
++// -----------------------------------------------------------------------
++// Categories
++// -----------------------------------------------------------------------
++// User-defined categories, layered on top of the fixed built-in set in
++// `utils/habit_category.dart` (kHabitCategories). The built-ins are never
++// written here — this table only ever holds the ones the user adds from
++// the habit form. `key` is stored in `Habits.category` exactly like a
++// built-in id.
++// `iconCodepoint`  a codepoint from the curated icon grid
++//                   (see utils/custom_category_options.dart), rebuilt as
++//                   IconData(iconCodepoint, fontFamily: 'MaterialIcons').
++// `colorValue`     an ARGB int from the curated color swatch.
++class Categories extends Table {
++  IntColumn get id => integer().autoIncrement()();
++  TextColumn get key => text().unique()();
++  TextColumn get label => text()();
++  IntColumn get iconCodepoint => integer()();
++  IntColumn get colorValue => integer()();
++}
++
+ // -----------------------------------------------------------------------
+ // AppSettings
+ // -----------------------------------------------------------------------
+diff --git a/lib/pages/home_page.dart b/lib/pages/home_page.dart
+index 84aad11..90106c8 100644
+--- a/lib/pages/home_page.dart
++++ b/lib/pages/home_page.dart
+@@ -6,7 +6,6 @@ import 'package:R_HabitTracker/components/my_habit_tile.dart';
+ import 'package:R_HabitTracker/components/my_heat_map.dart';
+ import 'package:R_HabitTracker/database/app_database.dart';
+ import 'package:R_HabitTracker/database/habit_database.dart';
+-import 'package:R_HabitTracker/utils/habit_category.dart';
+ import 'package:R_HabitTracker/utils/habit_util.dart';
+ import 'package:R_HabitTracker/utils/streak_util.dart';
+ import 'package:flutter/material.dart';
+@@ -22,8 +21,10 @@ class HomePage extends StatefulWidget {
+ class _HomePageState extends State<HomePage> {
+   @override
+   void initState() {
+-    // we gonna read existing habits on app startup
+-    Provider.of<HabitDatabase>(context, listen: false).readHabits();
++    // we gonna read existing habits (and custom categories) on app startup
++    final habitDatabase = Provider.of<HabitDatabase>(context, listen: false);
++    habitDatabase.readHabits();
++    habitDatabase.readCategories();
+     super.initState();
+   }
+ 
+@@ -158,7 +159,7 @@ class _HomePageState extends State<HomePage> {
+         return MyHabitTile(
+           isCompleted: isCompletedToday,
+           text: habit.name,
+-          category: habitCategoryById(habit.category),
++          category: habitDatabase.categoryById(habit.category),
+           targetCount: habit.targetCount,
+           unit: habit.unit,
+           streak: currentStreak(completedDays, scheduledDays),
+diff --git a/lib/pages/stats_page.dart b/lib/pages/stats_page.dart
+index 104d8e1..a92a3cb 100644
+--- a/lib/pages/stats_page.dart
++++ b/lib/pages/stats_page.dart
+@@ -1,7 +1,6 @@
+ import 'package:R_HabitTracker/database/app_database.dart';
+ import 'package:R_HabitTracker/database/habit_database.dart';
+ import 'package:R_HabitTracker/theme/app_spacing.dart';
+-import 'package:R_HabitTracker/utils/habit_category.dart';
+ import 'package:R_HabitTracker/utils/streak_util.dart';
+ import 'package:flutter/material.dart';
+ import 'package:provider/provider.dart';
+@@ -90,7 +89,7 @@ class _StatsPageState extends State<StatsPage> {
+                 ...habits.map((habit) {
+                   final completedDays = habitDatabase.completedDaysFor(habit.id);
+                   final scheduledDays = parseFrequencyDays(habit.frequencyDays);
+-                  final category = habitCategoryById(habit.category);
++                  final category = habitDatabase.categoryById(habit.category);
+                   final current = currentStreak(completedDays, scheduledDays);
+                   final best = bestStreak(completedDays, scheduledDays);
+ 
+diff --git a/b/lib/utils/custom_category_options.dart b/lib/utils/custom_category_options.dart
+new file mode 100644
+index 0000000..e94e811
+--- /dev/null
++++ b/lib/utils/custom_category_options.dart
+@@ -0,0 +1,49 @@
++import 'package:flutter/material.dart';
++
++/// Curated icon grid offered when creating a custom category. Kept to a
++/// fixed, small set (rather than free icon search) so the picker stays
++/// simple and every icon reads clearly at the small size used on tiles.
++const List<IconData> kCustomCategoryIcons = [
++  Icons.star_rounded,
++  Icons.favorite_rounded,
++  Icons.self_improvement_rounded,
++  Icons.fitness_center_rounded,
++  Icons.work_rounded,
++  Icons.menu_book_rounded,
++  Icons.restaurant_rounded,
++  Icons.local_drink_rounded,
++  Icons.bedtime_rounded,
++  Icons.directions_run_rounded,
++  Icons.spa_rounded,
++  Icons.palette_rounded,
++  Icons.music_note_rounded,
++  Icons.brush_rounded,
++  Icons.school_rounded,
++  Icons.savings_rounded,
++  Icons.pets_rounded,
++  Icons.eco_rounded,
++  Icons.code_rounded,
++  Icons.camera_alt_rounded,
++  Icons.groups_rounded,
++  Icons.home_rounded,
++  Icons.travel_explore_rounded,
++  Icons.emoji_events_rounded,
++];
++
++/// Curated color swatch for custom categories — vibrant, distinct at a
++/// glance, and consistent with the accent colors already used by the
++/// built-in categories in `habit_category.dart`.
++const List<Color> kCustomCategoryColors = [
++  Color(0xFFEF4444), // red
++  Color(0xFFFF7A59), // orange
++  Color(0xFFF59E0B), // amber
++  Color(0xFFEAB308), // yellow
++  Color(0xFF22C55E), // green
++  Color(0xFF0F9B8E), // teal
++  Color(0xFF06B6D4), // cyan
++  Color(0xFF3B82F6), // blue
++  Color(0xFF6366F1), // indigo
++  Color(0xFF8B5CF6), // violet
++  Color(0xFFD946EF), // fuchsia
++  Color(0xFF6B6963), // neutral
++];

@@ -1,4 +1,5 @@
 import 'package:R_HabitTracker/database/app_database.dart';
+import 'package:R_HabitTracker/utils/habit_category.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 
@@ -52,6 +53,72 @@ class HabitDatabase extends ChangeNotifier {
       completedDaysByHabit[habitId] ?? [];
 
   int progressFor(int habitId) => todayProgressByHabit[habitId] ?? 0;
+
+  // -------------------- CATEGORIES -----------------
+
+  // user-added categories, layered on top of the fixed kHabitCategories
+  // set. Loaded once at startup and kept in sync via readCategories().
+  final List<HabitCategory> customCategories = [];
+
+  // built-ins first, then custom ones in creation order.
+  List<HabitCategory> get allCategories => [
+        ...kHabitCategories,
+        ...customCategories,
+      ];
+
+  HabitCategory categoryById(String id) => allCategories.firstWhere(
+        (c) => c.id == id,
+        orElse: () => kHabitCategories.last, // falls back to "Autre"
+      );
+
+  Future<void> readCategories() async {
+    final rows = await db.select(db.categories).get();
+    customCategories
+      ..clear()
+      ..addAll(rows.map((r) => HabitCategory(
+            id: r.key,
+            label: r.label,
+            icon: IconData(r.iconCodepoint, fontFamily: 'MaterialIcons'),
+            color: Color(r.colorValue),
+          )));
+    notifyListeners();
+  }
+
+  // CREATE - add a custom category and return its generated key. Slugs
+  // the label into a unique key so it can be stored on Habits.category
+  // alongside the built-in ids.
+  Future<String> addCategory({
+    required String label,
+    required IconData icon,
+    required Color color,
+  }) async {
+    final baseKey = label
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+        .replaceAll(RegExp(r'^_+|_+$'), '');
+    final existingKeys = {
+      ...kHabitCategories.map((c) => c.id),
+      ...customCategories.map((c) => c.id),
+    };
+    var key = baseKey.isEmpty ? 'custom' : baseKey;
+    var suffix = 2;
+    while (existingKeys.contains(key)) {
+      key = '${baseKey.isEmpty ? 'custom' : baseKey}_$suffix';
+      suffix++;
+    }
+
+    await db.into(db.categories).insert(
+          CategoriesCompanion.insert(
+            key: key,
+            label: label.trim(),
+            iconCodepoint: icon.codePoint,
+            colorValue: color.value,
+          ),
+        );
+    await readCategories();
+    return key;
+  }
 
   // CREATE - add a new habit to the database
   //
