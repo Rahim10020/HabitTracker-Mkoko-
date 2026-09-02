@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 ThemeData lightMode = ThemeData(
   colorScheme: const ColorScheme.light(
@@ -7,5 +8,8 @@ ThemeData lightMode = ThemeData(
     secondary: Color(0xFFCFCFCF),
     inversePrimary: Color(0xFF141414),
     tertiary: Color(0xFF424242),
+  ),
+  appBarTheme: const AppBarTheme(
+    systemOverlayStyle: SystemUiOverlayStyle.dark,
   ),
 );
