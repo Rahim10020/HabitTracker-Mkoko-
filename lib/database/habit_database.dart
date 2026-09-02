@@ -37,11 +37,21 @@ class HabitDatabase extends ChangeNotifier {
   final List<Habit> currentHabits = [];
 
   // completed dates per habit id (replaces the old Habit.completedDays
-  // field, now that completions live in their own table)
+  // field, now that completions live in their own table). A day only
+  // lands here once its count reached the habit's targetCount — partial
+  // progress on a quantifiable habit doesn't count as "done" for streaks,
+  // the heatmap, or the summary header.
   final Map<int, List<DateTime>> completedDaysByHabit = {};
+
+  // today's raw progress count per habit (0..targetCount), regardless of
+  // whether it has reached the target yet. Drives the +/- stepper and
+  // progress bar on quantifiable habit tiles.
+  final Map<int, int> todayProgressByHabit = {};
 
   List<DateTime> completedDaysFor(int habitId) =>
       completedDaysByHabit[habitId] ?? [];
+
+  int progressFor(int habitId) => todayProgressByHabit[habitId] ?? 0;
 
   // CREATE - add a new habit to the database
   //
@@ -77,41 +87,69 @@ class HabitDatabase extends ChangeNotifier {
       ..clear()
       ..addAll(fetchedHabits);
 
+    final today = DateTime.now();
+    final normalizedToday = DateTime(today.year, today.month, today.day);
+
     completedDaysByHabit.clear();
+    todayProgressByHabit.clear();
     for (final habit in fetchedHabits) {
       final completions = await (db.select(db.habitCompletions)
-            ..where((c) =>
-                c.habitId.equals(habit.id) & c.count.isBiggerThanValue(0)))
+            ..where((c) => c.habitId.equals(habit.id)))
           .get();
-      completedDaysByHabit[habit.id] =
-          completions.map((c) => c.date).toList();
+
+      completedDaysByHabit[habit.id] = completions
+          .where((c) => c.count >= habit.targetCount)
+          .map((c) => c.date)
+          .toList();
+
+      final todayRows = completions.where((c) =>
+          c.date.year == normalizedToday.year &&
+          c.date.month == normalizedToday.month &&
+          c.date.day == normalizedToday.day);
+      todayProgressByHabit[habit.id] =
+          todayRows.isEmpty ? 0 : todayRows.first.count;
     }
 
     // update UI
     notifyListeners();
   }
 
-  // UPDATE - check habit on and off for today
+  // UPDATE - check habit on and off for today (simple on/off habits, i.e.
+  // targetCount == 1 — the tap-to-toggle tile).
   //
   // Marking "on" records the habit's full targetCount for today; marking
-  // "off" clears it. Partial/quantifiable progress (e.g. logging 3 of 8
-  // glasses of water) is a UI concern for the next patch — the schema
-  // already supports it via HabitCompletions.count.
+  // "off" clears it.
   Future<void> updateHabitCompletion(int id, bool isCompleted) async {
-    final today = DateTime.now();
-    final normalizedToday = DateTime(today.year, today.month, today.day);
-
     final habit =
         await (db.select(db.habits)..where((h) => h.id.equals(id)))
             .getSingleOrNull();
     if (habit == null) return;
 
+    await _setTodayProgress(id, isCompleted ? habit.targetCount : 0);
+  }
+
+  // UPDATE - adjust today's progress for a quantifiable habit by [delta]
+  // (e.g. +1/-1 glass of water), clamped to [0, targetCount]. Powers the
+  // +/- stepper on quantifiable habit tiles.
+  Future<void> adjustHabitProgress(int id, int delta) async {
+    final habit =
+        await (db.select(db.habits)..where((h) => h.id.equals(id)))
+            .getSingleOrNull();
+    if (habit == null) return;
+
+    final newValue = (progressFor(id) + delta).clamp(0, habit.targetCount);
+    await _setTodayProgress(id, newValue);
+  }
+
+  // shared upsert for today's HabitCompletions row.
+  Future<void> _setTodayProgress(int id, int newCount) async {
+    final today = DateTime.now();
+    final normalizedToday = DateTime(today.year, today.month, today.day);
+
     final existing = await (db.select(db.habitCompletions)
           ..where(
               (c) => c.habitId.equals(id) & c.date.equals(normalizedToday)))
         .getSingleOrNull();
-
-    final newCount = isCompleted ? habit.targetCount : 0;
 
     if (existing == null) {
       await db.into(db.habitCompletions).insert(

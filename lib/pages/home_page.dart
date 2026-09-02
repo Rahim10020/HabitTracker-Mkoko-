@@ -46,6 +46,14 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void incrementHabit(Habit habit) {
+    context.read<HabitDatabase>().adjustHabitProgress(habit.id, 1);
+  }
+
+  void decrementHabit(Habit habit) {
+    context.read<HabitDatabase>().adjustHabitProgress(habit.id, -1);
+  }
+
   Future<void> editHabitBox(Habit habit) async {
     final result = await showHabitFormSheet(
       context,
@@ -154,7 +162,10 @@ class _HomePageState extends State<HomePage> {
           targetCount: habit.targetCount,
           unit: habit.unit,
           streak: currentStreak(completedDays, scheduledDays),
+          currentValue: habitDatabase.progressFor(habit.id),
           onChanged: (value) => checkHabitOnAndOff(value, habit),
+          onIncrement: () => incrementHabit(habit),
+          onDecrement: () => decrementHabit(habit),
           onEditPressed: (context) => editHabitBox(habit),
           onDeletePressed: (context) => deleteHabitBox(habit),
         );

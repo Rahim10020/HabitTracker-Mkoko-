@@ -11,7 +11,18 @@ class MyHabitTile extends StatelessWidget {
   final int targetCount;
   final String? unit;
   final int streak;
+
+  // current progress for today (0..targetCount). Only meaningful — and
+  // only used — when targetCount > 1 (quantifiable habits).
+  final int currentValue;
+
+  // simple on/off toggle — used when targetCount == 1.
   final Function(bool?)? onChanged;
+
+  // +/- stepper — used when targetCount > 1.
+  final VoidCallback? onIncrement;
+  final VoidCallback? onDecrement;
+
   final Function(BuildContext)? onEditPressed;
   final Function(BuildContext)? onDeletePressed;
 
@@ -23,15 +34,106 @@ class MyHabitTile extends StatelessWidget {
     required this.targetCount,
     required this.unit,
     required this.streak,
+    this.currentValue = 0,
     required this.onChanged,
+    this.onIncrement,
+    this.onDecrement,
     required this.onEditPressed,
     required this.onDeletePressed,
   });
+
+  bool get _isQuantifiable => targetCount > 1;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    final tileBody = Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: colorScheme.secondary, // card surface (see theme notes)
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(
+          color: colorScheme.outline.withOpacity(isCompleted ? 0 : 1),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // category icon
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: category.color.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(category.icon, color: category.color, size: 20),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          // name + meta (+ progress bar for quantifiable habits)
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  text,
+                  style: textTheme.bodyLarge?.copyWith(
+                    decoration:
+                        isCompleted ? TextDecoration.lineThrough : null,
+                    color: isCompleted
+                        ? colorScheme.onSurfaceVariant
+                        : colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                if (streak > 0)
+                  Row(
+                    children: [
+                      const Icon(Icons.local_fire_department_rounded,
+                          size: 14, color: Color(0xFFF97316)),
+                      const SizedBox(width: 2),
+                      Text('$streak', style: textTheme.labelSmall),
+                    ],
+                  ),
+                if (_isQuantifiable) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                    child: LinearProgressIndicator(
+                      value: (currentValue / targetCount).clamp(0.0, 1.0),
+                      minHeight: 5,
+                      backgroundColor: colorScheme.outline.withOpacity(0.3),
+                      valueColor: AlwaysStoppedAnimation(
+                        isCompleted
+                            ? AppColors.lightSuccess
+                            : colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          // trailing control: check toggle (simple) or +/- stepper (quantifiable)
+          _isQuantifiable
+              ? _ProgressStepper(
+                  currentValue: currentValue,
+                  targetCount: targetCount,
+                  unit: unit,
+                  isCompleted: isCompleted,
+                  onIncrement: onIncrement,
+                  onDecrement: onDecrement,
+                )
+              : _CompletionCheck(
+                  isCompleted: isCompleted,
+                  onTap: () => onChanged?.call(!isCompleted),
+                ),
+        ],
+      ),
+    );
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -65,79 +167,14 @@ class MyHabitTile extends StatelessWidget {
             ),
           ],
         ),
-        child: GestureDetector(
-          onTap: () => onChanged?.call(!isCompleted),
-          child: Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: colorScheme.secondary, // card surface (see theme notes)
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              border: Border.all(
-                color: colorScheme.outline.withOpacity(isCompleted ? 0 : 1),
+        // quantifiable habits are driven entirely by the +/- stepper, so
+        // the whole-tile tap-to-toggle only applies to simple habits.
+        child: _isQuantifiable
+            ? tileBody
+            : GestureDetector(
+                onTap: () => onChanged?.call(!isCompleted),
+                child: tileBody,
               ),
-            ),
-            child: Row(
-              children: [
-                // category icon
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: category.color.withOpacity(0.15),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(category.icon, color: category.color, size: 20),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                // name + meta row
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        text,
-                        style: textTheme.bodyLarge?.copyWith(
-                          decoration: isCompleted
-                              ? TextDecoration.lineThrough
-                              : null,
-                          color: isCompleted
-                              ? colorScheme.onSurfaceVariant
-                              : colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          if (streak > 0) ...[
-                            const Icon(Icons.local_fire_department_rounded,
-                                size: 14, color: Color(0xFFF97316)),
-                            const SizedBox(width: 2),
-                            Text('$streak', style: textTheme.labelSmall),
-                            const SizedBox(width: AppSpacing.sm),
-                          ],
-                          if (targetCount > 1) ...[
-                            Icon(Icons.flag_rounded,
-                                size: 14, color: colorScheme.onSurfaceVariant),
-                            const SizedBox(width: 2),
-                            Text(
-                              '$targetCount${unit != null && unit!.isNotEmpty ? ' ${unit!}' : ''}',
-                              style: textTheme.labelSmall,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                // completion toggle
-                _CompletionCheck(isCompleted: isCompleted, onTap: () {
-                  onChanged?.call(!isCompleted);
-                }),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -171,6 +208,104 @@ class _CompletionCheck extends StatelessWidget {
         child: isCompleted
             ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
             : null,
+      ),
+    );
+  }
+}
+
+// +/- stepper for quantifiable habits (e.g. "8 glasses of water"). Shows
+// the current/target count and lets the user log progress one unit at a
+// time; buttons disable themselves at the 0 and targetCount bounds.
+class _ProgressStepper extends StatelessWidget {
+  final int currentValue;
+  final int targetCount;
+  final String? unit;
+  final bool isCompleted;
+  final VoidCallback? onIncrement;
+  final VoidCallback? onDecrement;
+
+  const _ProgressStepper({
+    required this.currentValue,
+    required this.targetCount,
+    required this.unit,
+    required this.isCompleted,
+    required this.onIncrement,
+    required this.onDecrement,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _StepperButton(
+              icon: Icons.remove_rounded,
+              onTap: currentValue > 0 ? onDecrement : null,
+            ),
+            SizedBox(
+              width: 28,
+              child: Text(
+                '$currentValue',
+                textAlign: TextAlign.center,
+                style: textTheme.labelLarge?.copyWith(
+                  color: isCompleted
+                      ? AppColors.lightSuccess
+                      : colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            _StepperButton(
+              icon: Icons.add_rounded,
+              onTap: currentValue < targetCount ? onIncrement : null,
+            ),
+          ],
+        ),
+        Text(
+          '/ $targetCount${unit != null && unit!.isNotEmpty ? ' ${unit!}' : ''}',
+          style: textTheme.labelSmall
+              ?.copyWith(color: colorScheme.onSurfaceVariant),
+        ),
+      ],
+    );
+  }
+}
+
+class _StepperButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  const _StepperButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final enabled = onTap != null;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 26,
+        height: 26,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: enabled
+              ? colorScheme.primary.withOpacity(0.12)
+              : colorScheme.outline.withOpacity(0.08),
+        ),
+        child: Icon(
+          icon,
+          size: 16,
+          color: enabled
+              ? colorScheme.primary
+              : colorScheme.onSurfaceVariant.withOpacity(0.4),
+        ),
       ),
     );
   }
