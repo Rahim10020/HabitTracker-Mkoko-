@@ -1,8 +1,8 @@
 import 'package:R_HabitTracker/components/my_drawer.dart';
 import 'package:R_HabitTracker/components/my_habit_tile.dart';
 import 'package:R_HabitTracker/components/my_heat_map.dart';
+import 'package:R_HabitTracker/database/app_database.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
-import 'package:R_HabitTracker/models/habit.dart';
 import 'package:R_HabitTracker/utils/habit_util.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -166,8 +166,6 @@ class _HomePageState extends State<HomePage> {
   Widget _buildHeatMap() {
     // habit database
     final habitDatabase = context.watch<HabitDatabase>();
-    // get current habits
-    List<Habit> currentHabits = habitDatabase.currentHabits;
     // return a heatmap UI
     return FutureBuilder<DateTime?>(
       future: habitDatabase.getFirstLaunch(),
@@ -176,7 +174,7 @@ class _HomePageState extends State<HomePage> {
         if (snapshot.hasData) {
           return MyHeatMap(
             startDate: snapshot.data!,
-            datasets: prepareHeatMapDataset(currentHabits),
+            datasets: prepareHeatMapDataset(habitDatabase.completedDaysByHabit),
           );
         }
         // handle case no data is returned
@@ -202,7 +200,7 @@ class _HomePageState extends State<HomePage> {
         final habit = currentHabits[index];
         // check if the habit is completed today
         bool isCompletedToday = isHabitCompletedToday(
-          habit.completedDays,
+          habitDatabase.completedDaysFor(habit.id),
         );
         // return habit tile UI
         return MyHabitTile(

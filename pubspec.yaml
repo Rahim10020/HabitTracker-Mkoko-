@@ -38,9 +38,12 @@ dependencies:
   provider:
   google_nav_bar: ^5.0.6
   google_fonts: ^6.2.1
-  isar: ^3.1.0+1
-  isar_flutter_libs: ^3.1.0+1
+  # -- DB (replaces isar / isar_flutter_libs, unmaintained) --
+  drift: ^2.20.3
+  drift_flutter: ^0.2.4
+  sqlite3_flutter_libs: ^0.5.24
   path_provider: ^2.1.5
+  path: ^1.9.0
   flutter_slidable: ^3.1.2
   flutter_heatmap_calendar: ^1.0.5
 
@@ -54,7 +57,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
-  isar_generator: ^3.1.0+1
+  drift_dev: ^2.20.3
   build_runner: ^2.4.13
   flutter_launcher_icons: ^0.14.3
 

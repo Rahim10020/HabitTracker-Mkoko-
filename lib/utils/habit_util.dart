@@ -1,6 +1,4 @@
-// given a habit list of completin days
-
-import 'package:R_HabitTracker/models/habit.dart';
+// given completed days (per habit, or aggregated across habits)
 
 bool isHabitCompletedToday(List<DateTime> completedDays) {
   final today = DateTime.now();
@@ -12,11 +10,13 @@ bool isHabitCompletedToday(List<DateTime> completedDays) {
   );
 }
 
-// we gonna prepare heat map datasets
-Map<DateTime, int> prepareHeatMapDataset(List<Habit> habits) {
+// we gonna prepare heat map datasets from every habit's completed dates
+Map<DateTime, int> prepareHeatMapDataset(
+  Map<int, List<DateTime>> completedDaysByHabit,
+) {
   Map<DateTime, int> datasets = {};
-  for (var habit in habits) {
-    for (var date in habit.completedDays) {
+  for (final completedDays in completedDaysByHabit.values) {
+    for (var date in completedDays) {
       // normalize date to avoid type mismatch
       final normalizedDate = DateTime(date.year, date.month, date.day);
       // if the date already exists in the dataset, increment its count
