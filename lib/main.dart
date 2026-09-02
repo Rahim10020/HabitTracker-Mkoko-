@@ -1,5 +1,5 @@
 import 'package:R_HabitTracker/database/habit_database.dart';
-import 'package:R_HabitTracker/pages/home_page.dart';
+import 'package:R_HabitTracker/pages/root_shell.dart';
 import 'package:R_HabitTracker/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const HomePage(),
+      home: const RootShell(),
       theme: Provider.of<ThemeProvider>(context).themeData,
     );
   }

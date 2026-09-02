@@ -1,0 +1,1743 @@
+diff --git a/lib/components/confirm_delete_sheet.dart b/lib/components/confirm_delete_sheet.dart
+new file mode 100644
+index 0000000..c148642
+--- /dev/null
++++ b/lib/components/confirm_delete_sheet.dart
+@@ -0,0 +1,100 @@
++import 'package:R_HabitTracker/theme/app_colors.dart';
++import 'package:R_HabitTracker/theme/app_spacing.dart';
++import 'package:flutter/material.dart';
++
++/// Shows a destructive-confirmation bottom sheet. Returns true if the user
++/// confirmed the deletion.
++Future<bool> showConfirmDeleteSheet(
++  BuildContext context, {
++  required String habitName,
++}) async {
++  final result = await showModalBottomSheet<bool>(
++    context: context,
++    backgroundColor: Colors.transparent,
++    builder: (context) => _ConfirmDeleteSheet(habitName: habitName),
++  );
++  return result ?? false;
++}
++
++class _ConfirmDeleteSheet extends StatelessWidget {
++  final String habitName;
++
++  const _ConfirmDeleteSheet({required this.habitName});
++
++  @override
++  Widget build(BuildContext context) {
++    final colorScheme = Theme.of(context).colorScheme;
++    final textTheme = Theme.of(context).textTheme;
++
++    return Container(
++      decoration: BoxDecoration(
++        color: colorScheme.surface,
++        borderRadius: const BorderRadius.vertical(
++          top: Radius.circular(AppRadius.xl),
++        ),
++      ),
++      padding: const EdgeInsets.fromLTRB(
++        AppSpacing.xl,
++        AppSpacing.lg,
++        AppSpacing.xl,
++        AppSpacing.xl,
++      ),
++      child: Column(
++        mainAxisSize: MainAxisSize.min,
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          Center(
++            child: Container(
++              width: 40,
++              height: 4,
++              margin: const EdgeInsets.only(bottom: AppSpacing.lg),
++              decoration: BoxDecoration(
++                color: colorScheme.outline,
++                borderRadius: BorderRadius.circular(AppRadius.full),
++              ),
++            ),
++          ),
++          Text('Supprimer « $habitName » ?', style: textTheme.headlineMedium),
++          const SizedBox(height: AppSpacing.sm),
++          Text(
++            'Cette action supprime aussi tout l\'historique de complétion de cette habitude. C\'est irréversible.',
++            style: textTheme.bodyMedium,
++          ),
++          const SizedBox(height: AppSpacing.xl),
++          Row(
++            children: [
++              Expanded(
++                child: OutlinedButton(
++                  onPressed: () => Navigator.pop(context, false),
++                  style: OutlinedButton.styleFrom(
++                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
++                    shape: RoundedRectangleBorder(
++                      borderRadius: BorderRadius.circular(AppRadius.full),
++                    ),
++                  ),
++                  child: const Text('Annuler'),
++                ),
++              ),
++              const SizedBox(width: AppSpacing.sm),
++              Expanded(
++                child: ElevatedButton(
++                  onPressed: () => Navigator.pop(context, true),
++                  style: ElevatedButton.styleFrom(
++                    backgroundColor: AppColors.lightError,
++                    foregroundColor: Colors.white,
++                    elevation: 0,
++                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
++                    shape: RoundedRectangleBorder(
++                      borderRadius: BorderRadius.circular(AppRadius.full),
++                    ),
++                  ),
++                  child: const Text('Supprimer'),
++                ),
++              ),
++            ],
++          ),
++        ],
++      ),
++    );
++  }
++}
+diff --git a/lib/components/empty_habits_view.dart b/lib/components/empty_habits_view.dart
+new file mode 100644
+index 0000000..65b408b
+--- /dev/null
++++ b/lib/components/empty_habits_view.dart
+@@ -0,0 +1,65 @@
++import 'package:R_HabitTracker/theme/app_spacing.dart';
++import 'package:flutter/material.dart';
++
++class EmptyHabitsView extends StatelessWidget {
++  final VoidCallback onCreatePressed;
++
++  const EmptyHabitsView({super.key, required this.onCreatePressed});
++
++  @override
++  Widget build(BuildContext context) {
++    final colorScheme = Theme.of(context).colorScheme;
++    final textTheme = Theme.of(context).textTheme;
++
++    return Padding(
++      padding: const EdgeInsets.symmetric(
++        horizontal: AppSpacing.xl,
++        vertical: AppSpacing.xxxl,
++      ),
++      child: Column(
++        children: [
++          Container(
++            width: 88,
++            height: 88,
++            decoration: BoxDecoration(
++              color: colorScheme.primaryContainer,
++              shape: BoxShape.circle,
++            ),
++            child: Icon(Icons.self_improvement_rounded,
++                size: 44, color: colorScheme.primary),
++          ),
++          const SizedBox(height: AppSpacing.lg),
++          Text(
++            'Aucune habitude pour l\'instant',
++            style: textTheme.headlineMedium,
++            textAlign: TextAlign.center,
++          ),
++          const SizedBox(height: AppSpacing.sm),
++          Text(
++            'Crée ta première habitude pour commencer à suivre tes progrès.',
++            style: textTheme.bodyMedium,
++            textAlign: TextAlign.center,
++          ),
++          const SizedBox(height: AppSpacing.xl),
++          ElevatedButton.icon(
++            onPressed: onCreatePressed,
++            icon: const Icon(Icons.add_rounded),
++            label: const Text('Créer une habitude'),
++            style: ElevatedButton.styleFrom(
++              backgroundColor: colorScheme.primary,
++              foregroundColor: Colors.white,
++              elevation: 0,
++              padding: const EdgeInsets.symmetric(
++                horizontal: AppSpacing.xl,
++                vertical: AppSpacing.md,
++              ),
++              shape: RoundedRectangleBorder(
++                borderRadius: BorderRadius.circular(AppRadius.full),
++              ),
++            ),
++          ),
++        ],
++      ),
++    );
++  }
++}
+diff --git a/lib/components/habit_form_sheet.dart b/lib/components/habit_form_sheet.dart
+new file mode 100644
+index 0000000..1d6bfbf
+--- /dev/null
++++ b/lib/components/habit_form_sheet.dart
+@@ -0,0 +1,355 @@
++import 'package:R_HabitTracker/theme/app_spacing.dart';
++import 'package:R_HabitTracker/utils/habit_category.dart';
++import 'package:flutter/material.dart';
++
++class HabitFormResult {
++  final String name;
++  final String category;
++  final String frequencyType; // 'daily' | 'weekly'
++  final String frequencyDays; // comma-separated ISO weekdays
++  final int targetCount;
++  final String? unit;
++
++  const HabitFormResult({
++    required this.name,
++    required this.category,
++    required this.frequencyType,
++    required this.frequencyDays,
++    required this.targetCount,
++    required this.unit,
++  });
++}
++
++const _weekdayLabels = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
++
++/// Shows the create/edit habit form as a modal bottom sheet and returns a
++/// [HabitFormResult], or null if the user cancelled.
++Future<HabitFormResult?> showHabitFormSheet(
++  BuildContext context, {
++  String? initialName,
++  String initialCategory = 'other',
++  String initialFrequencyType = 'daily',
++  String initialFrequencyDays = '1,2,3,4,5,6,7',
++  int initialTargetCount = 1,
++  String? initialUnit,
++}) {
++  return showModalBottomSheet<HabitFormResult>(
++    context: context,
++    isScrollControlled: true,
++    backgroundColor: Colors.transparent,
++    builder: (context) => _HabitFormSheet(
++      initialName: initialName,
++      initialCategory: initialCategory,
++      initialFrequencyType: initialFrequencyType,
++      initialFrequencyDays: initialFrequencyDays,
++      initialTargetCount: initialTargetCount,
++      initialUnit: initialUnit,
++    ),
++  );
++}
++
++class _HabitFormSheet extends StatefulWidget {
++  final String? initialName;
++  final String initialCategory;
++  final String initialFrequencyType;
++  final String initialFrequencyDays;
++  final int initialTargetCount;
++  final String? initialUnit;
++
++  const _HabitFormSheet({
++    required this.initialName,
++    required this.initialCategory,
++    required this.initialFrequencyType,
++    required this.initialFrequencyDays,
++    required this.initialTargetCount,
++    required this.initialUnit,
++  });
++
++  @override
++  State<_HabitFormSheet> createState() => _HabitFormSheetState();
++}
++
++class _HabitFormSheetState extends State<_HabitFormSheet> {
++  late final TextEditingController nameController =
++      TextEditingController(text: widget.initialName ?? '');
++  late final TextEditingController unitController =
++      TextEditingController(text: widget.initialUnit ?? '');
++
++  late String category = widget.initialCategory;
++  late String frequencyType = widget.initialFrequencyType;
++  late Set<int> selectedDays = widget.initialFrequencyDays
++      .split(',')
++      .where((s) => s.trim().isNotEmpty)
++      .map(int.parse)
++      .toSet();
++  late bool isQuantifiable = widget.initialTargetCount > 1;
++  late int targetCount =
++      widget.initialTargetCount > 1 ? widget.initialTargetCount : 1;
++
++  @override
++  void dispose() {
++    nameController.dispose();
++    unitController.dispose();
++    super.dispose();
++  }
++
++  void _submit() {
++    final name = nameController.text.trim();
++    if (name.isEmpty) return;
++
++    final days = frequencyType == 'daily'
++        ? [1, 2, 3, 4, 5, 6, 7]
++        : (selectedDays.isEmpty ? [1, 2, 3, 4, 5, 6, 7] : selectedDays.toList()
++          ..sort());
++
++    Navigator.pop(
++      context,
++      HabitFormResult(
++        name: name,
++        category: category,
++        frequencyType: frequencyType,
++        frequencyDays: days.join(','),
++        targetCount: isQuantifiable ? targetCount : 1,
++        unit: isQuantifiable && unitController.text.trim().isNotEmpty
++            ? unitController.text.trim()
++            : null,
++      ),
++    );
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    final colorScheme = Theme.of(context).colorScheme;
++    final textTheme = Theme.of(context).textTheme;
++    final isEditing = widget.initialName != null;
++
++    return Padding(
++      padding: EdgeInsets.only(
++        bottom: MediaQuery.of(context).viewInsets.bottom,
++      ),
++      child: Container(
++        decoration: BoxDecoration(
++          color: colorScheme.surface,
++          borderRadius: const BorderRadius.vertical(
++            top: Radius.circular(AppRadius.xl),
++          ),
++        ),
++        padding: const EdgeInsets.fromLTRB(
++          AppSpacing.xl,
++          AppSpacing.md,
++          AppSpacing.xl,
++          AppSpacing.xl,
++        ),
++        child: SingleChildScrollView(
++          child: Column(
++            crossAxisAlignment: CrossAxisAlignment.start,
++            mainAxisSize: MainAxisSize.min,
++            children: [
++              Center(
++                child: Container(
++                  width: 40,
++                  height: 4,
++                  margin: const EdgeInsets.only(bottom: AppSpacing.lg),
++                  decoration: BoxDecoration(
++                    color: colorScheme.outline,
++                    borderRadius: BorderRadius.circular(AppRadius.full),
++                  ),
++                ),
++              ),
++              Text(
++                isEditing ? 'Modifier l\'habitude' : 'Nouvelle habitude',
++                style: textTheme.headlineMedium,
++              ),
++              const SizedBox(height: AppSpacing.lg),
++
++              // name
++              TextField(
++                controller: nameController,
++                autofocus: !isEditing,
++                decoration: InputDecoration(
++                  hintText: 'Nom de l\'habitude',
++                  filled: true,
++                  fillColor: colorScheme.secondary,
++                  border: OutlineInputBorder(
++                    borderRadius: BorderRadius.circular(AppRadius.md),
++                    borderSide: BorderSide.none,
++                  ),
++                ),
++              ),
++              const SizedBox(height: AppSpacing.lg),
++
++              // category
++              Text('Catégorie', style: textTheme.titleLarge),
++              const SizedBox(height: AppSpacing.sm),
++              Wrap(
++                spacing: AppSpacing.sm,
++                runSpacing: AppSpacing.sm,
++                children: kHabitCategories.map((c) {
++                  final selected = category == c.id;
++                  return ChoiceChip(
++                    label: Text(c.label),
++                    avatar: Icon(c.icon,
++                        size: 16,
++                        color: selected ? Colors.white : c.color),
++                    selected: selected,
++                    onSelected: (_) => setState(() => category = c.id),
++                    selectedColor: c.color,
++                    backgroundColor: colorScheme.secondary,
++                    labelStyle: TextStyle(
++                      color: selected ? Colors.white : colorScheme.onSurface,
++                    ),
++                    shape: RoundedRectangleBorder(
++                      borderRadius: BorderRadius.circular(AppRadius.full),
++                      side: BorderSide.none,
++                    ),
++                  );
++                }).toList(),
++              ),
++              const SizedBox(height: AppSpacing.lg),
++
++              // frequency
++              Text('Fréquence', style: textTheme.titleLarge),
++              const SizedBox(height: AppSpacing.sm),
++              Row(
++                children: [
++                  ChoiceChip(
++                    label: const Text('Tous les jours'),
++                    selected: frequencyType == 'daily',
++                    onSelected: (_) =>
++                        setState(() => frequencyType = 'daily'),
++                    backgroundColor: colorScheme.secondary,
++                    selectedColor: colorScheme.primary,
++                    labelStyle: TextStyle(
++                      color: frequencyType == 'daily'
++                          ? Colors.white
++                          : colorScheme.onSurface,
++                    ),
++                    shape: RoundedRectangleBorder(
++                      borderRadius: BorderRadius.circular(AppRadius.full),
++                      side: BorderSide.none,
++                    ),
++                  ),
++                  const SizedBox(width: AppSpacing.sm),
++                  ChoiceChip(
++                    label: const Text('Jours précis'),
++                    selected: frequencyType == 'weekly',
++                    onSelected: (_) =>
++                        setState(() => frequencyType = 'weekly'),
++                    backgroundColor: colorScheme.secondary,
++                    selectedColor: colorScheme.primary,
++                    labelStyle: TextStyle(
++                      color: frequencyType == 'weekly'
++                          ? Colors.white
++                          : colorScheme.onSurface,
++                    ),
++                    shape: RoundedRectangleBorder(
++                      borderRadius: BorderRadius.circular(AppRadius.full),
++                      side: BorderSide.none,
++                    ),
++                  ),
++                ],
++              ),
++              if (frequencyType == 'weekly') ...[
++                const SizedBox(height: AppSpacing.sm),
++                Row(
++                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
++                  children: List.generate(7, (i) {
++                    final weekday = i + 1; // 1=Mon..7=Sun
++                    final selected = selectedDays.contains(weekday);
++                    return GestureDetector(
++                      onTap: () => setState(() {
++                        selected
++                            ? selectedDays.remove(weekday)
++                            : selectedDays.add(weekday);
++                      }),
++                      child: CircleAvatar(
++                        radius: 18,
++                        backgroundColor: selected
++                            ? colorScheme.primary
++                            : colorScheme.secondary,
++                        child: Text(
++                          _weekdayLabels[i],
++                          style: TextStyle(
++                            color: selected
++                                ? Colors.white
++                                : colorScheme.onSurface,
++                          ),
++                        ),
++                      ),
++                    );
++                  }),
++                ),
++              ],
++              const SizedBox(height: AppSpacing.lg),
++
++              // quantifiable objective
++              Row(
++                mainAxisAlignment: MainAxisAlignment.spaceBetween,
++                children: [
++                  Text('Objectif quantifiable', style: textTheme.titleLarge),
++                  Switch(
++                    value: isQuantifiable,
++                    activeColor: colorScheme.primary,
++                    onChanged: (v) => setState(() => isQuantifiable = v),
++                  ),
++                ],
++              ),
++              if (isQuantifiable) ...[
++                const SizedBox(height: AppSpacing.sm),
++                Row(
++                  children: [
++                    IconButton(
++                      onPressed: () => setState(() {
++                        if (targetCount > 1) targetCount--;
++                      }),
++                      icon: const Icon(Icons.remove_circle_outline_rounded),
++                    ),
++                    Text('$targetCount', style: textTheme.titleLarge),
++                    IconButton(
++                      onPressed: () => setState(() => targetCount++),
++                      icon: const Icon(Icons.add_circle_outline_rounded),
++                    ),
++                    const SizedBox(width: AppSpacing.sm),
++                    Expanded(
++                      child: TextField(
++                        controller: unitController,
++                        decoration: InputDecoration(
++                          hintText: 'Unité (ex: verres, pages, min)',
++                          filled: true,
++                          fillColor: colorScheme.secondary,
++                          border: OutlineInputBorder(
++                            borderRadius: BorderRadius.circular(AppRadius.md),
++                            borderSide: BorderSide.none,
++                          ),
++                        ),
++                      ),
++                    ),
++                  ],
++                ),
++              ],
++              const SizedBox(height: AppSpacing.xl),
++
++              // save button
++              SizedBox(
++                width: double.infinity,
++                height: 52,
++                child: ElevatedButton(
++                  onPressed: _submit,
++                  style: ElevatedButton.styleFrom(
++                    backgroundColor: colorScheme.primary,
++                    foregroundColor: Colors.white,
++                    shape: RoundedRectangleBorder(
++                      borderRadius: BorderRadius.circular(AppRadius.full),
++                    ),
++                    elevation: 0,
++                  ),
++                  child: Text(isEditing ? 'Enregistrer' : 'Créer'),
++                ),
++              ),
++            ],
++          ),
++        ),
++      ),
++    );
++  }
++}
+diff --git a/lib/components/home_summary_header.dart b/lib/components/home_summary_header.dart
+new file mode 100644
+index 0000000..7a6c9b9
+--- /dev/null
++++ b/lib/components/home_summary_header.dart
+@@ -0,0 +1,50 @@
++import 'package:R_HabitTracker/theme/app_spacing.dart';
++import 'package:flutter/material.dart';
++
++class HomeSummaryHeader extends StatelessWidget {
++  final int completedCount;
++  final int totalCount;
++
++  const HomeSummaryHeader({
++    super.key,
++    required this.completedCount,
++    required this.totalCount,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    final colorScheme = Theme.of(context).colorScheme;
++    final textTheme = Theme.of(context).textTheme;
++    final progress = totalCount == 0 ? 0.0 : completedCount / totalCount;
++
++    return Padding(
++      padding: const EdgeInsets.fromLTRB(
++        AppSpacing.xl,
++        AppSpacing.sm,
++        AppSpacing.xl,
++        AppSpacing.lg,
++      ),
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          Text('Aujourd\'hui', style: textTheme.headlineMedium),
++          const SizedBox(height: AppSpacing.xs),
++          Text(
++            '$completedCount/$totalCount habitudes complétées',
++            style: textTheme.bodyMedium,
++          ),
++          const SizedBox(height: AppSpacing.sm),
++          ClipRRect(
++            borderRadius: BorderRadius.circular(AppRadius.full),
++            child: LinearProgressIndicator(
++              value: progress,
++              minHeight: 8,
++              backgroundColor: colorScheme.secondary,
++              valueColor: AlwaysStoppedAnimation(colorScheme.primary),
++            ),
++          ),
++        ],
++      ),
++    );
++  }
++}
+diff --git a/lib/components/my_drawer.dart b/lib/components/my_drawer.dart
+deleted file mode 100644
+index 9b1b16b..0000000
+--- a/lib/components/my_drawer.dart
++++ /dev/null
+@@ -1,56 +0,0 @@
+-import 'package:R_HabitTracker/components/my_drawer_tile.dart';
+-import 'package:R_HabitTracker/pages/settings_page.dart';
+-import 'package:flutter/material.dart';
+-
+-class MyDrawer extends StatelessWidget {
+-  const MyDrawer({super.key});
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return Drawer(
+-      backgroundColor: Theme.of(context).colorScheme.primary,
+-      child: Column(
+-        children: [
+-          // drawer header
+-          Padding(
+-            padding: const EdgeInsets.only(top: 100),
+-            child: Icon(
+-              Icons.hail_outlined,
+-              size: 68,
+-              color: Theme.of(context).colorScheme.inversePrimary,
+-            ),
+-          ),
+-          // the divider
+-          Padding(
+-            padding: const EdgeInsets.all(25),
+-            child: Divider(
+-              color: Theme.of(context).colorScheme.secondary,
+-            ),
+-          ),
+-          // home drawer tile
+-          MyDrawerTile(
+-            text: "HOME",
+-            icon: Icons.home,
+-            onTap: () {
+-              Navigator.pop(context);
+-            },
+-          ),
+-          // settings drawer tile
+-          MyDrawerTile(
+-            text: "SETTINGS",
+-            icon: Icons.settings,
+-            onTap: () {
+-              Navigator.pop(context);
+-              Navigator.push(
+-                context,
+-                MaterialPageRoute(
+-                  builder: (context) => const SettingsPage(),
+-                ),
+-              );
+-            },
+-          ),
+-        ],
+-      ),
+-    );
+-  }
+-}
+diff --git a/lib/components/my_drawer_tile.dart b/lib/components/my_drawer_tile.dart
+deleted file mode 100644
+index 4f99425..0000000
+--- a/lib/components/my_drawer_tile.dart
++++ /dev/null
+@@ -1,34 +0,0 @@
+-import 'package:flutter/material.dart';
+-
+-class MyDrawerTile extends StatelessWidget {
+-  final String text;
+-  final IconData icon;
+-  final Function()? onTap;
+-
+-  const MyDrawerTile({
+-    super.key,
+-    required this.text,
+-    required this.icon,
+-    required this.onTap,
+-  });
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return Padding(
+-      padding: const EdgeInsets.only(left: 20),
+-      child: ListTile(
+-        title: Text(
+-          text,
+-          style: TextStyle(
+-            color: Theme.of(context).colorScheme.inversePrimary,
+-          ),
+-        ),
+-        leading: Icon(
+-          icon,
+-          size: 20,
+-        ),
+-        onTap: onTap,
+-      ),
+-    );
+-  }
+-}
+diff --git a/lib/components/my_habit_tile.dart b/lib/components/my_habit_tile.dart
+index fe2efd8..2e9a687 100644
+--- a/lib/components/my_habit_tile.dart
++++ b/lib/components/my_habit_tile.dart
+@@ -1,9 +1,16 @@
++import 'package:R_HabitTracker/theme/app_colors.dart';
++import 'package:R_HabitTracker/theme/app_spacing.dart';
++import 'package:R_HabitTracker/utils/habit_category.dart';
+ import 'package:flutter/material.dart';
+ import 'package:flutter_slidable/flutter_slidable.dart';
+ 
+ class MyHabitTile extends StatelessWidget {
+   final bool isCompleted;
+   final String text;
++  final HabitCategory category;
++  final int targetCount;
++  final String? unit;
++  final int streak;
+   final Function(bool?)? onChanged;
+   final Function(BuildContext)? onEditPressed;
+   final Function(BuildContext)? onDeletePressed;
+@@ -12,6 +19,10 @@ class MyHabitTile extends StatelessWidget {
+     super.key,
+     required this.isCompleted,
+     required this.text,
++    required this.category,
++    required this.targetCount,
++    required this.unit,
++    required this.streak,
+     required this.onChanged,
+     required this.onEditPressed,
+     required this.onDeletePressed,
+@@ -19,67 +30,111 @@ class MyHabitTile extends StatelessWidget {
+ 
+   @override
+   Widget build(BuildContext context) {
++    final colorScheme = Theme.of(context).colorScheme;
++    final textTheme = Theme.of(context).textTheme;
++
+     return Padding(
+-      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 25),
++      padding: const EdgeInsets.symmetric(
++        vertical: AppSpacing.xs,
++        horizontal: AppSpacing.xl,
++      ),
+       child: Slidable(
+         endActionPane: ActionPane(
+           motion: const StretchMotion(),
++          extentRatio: 0.4,
+           children: [
+-            // edit option
+             SlidableAction(
+               onPressed: onEditPressed,
+-              backgroundColor: Theme.of(context).colorScheme.tertiary,
+-              icon: Icons.edit,
+-              borderRadius: BorderRadius.zero,
++              backgroundColor: colorScheme.tertiary,
++              foregroundColor: Colors.white,
++              icon: Icons.edit_rounded,
++              borderRadius: const BorderRadius.only(
++                topLeft: Radius.circular(AppRadius.sm),
++                bottomLeft: Radius.circular(AppRadius.sm),
++              ),
+             ),
+-            // delete option
+             SlidableAction(
+               onPressed: onDeletePressed,
+-              backgroundColor: Colors.red,
+-              icon: Icons.delete,
++              backgroundColor: AppColors.lightError,
++              foregroundColor: Colors.white,
++              icon: Icons.delete_rounded,
+               borderRadius: const BorderRadius.only(
+-                topLeft: Radius.zero,
+-                topRight: Radius.circular(8),
+-                bottomLeft: Radius.zero,
+-                bottomRight: Radius.circular(8),
++                topRight: Radius.circular(AppRadius.lg),
++                bottomRight: Radius.circular(AppRadius.lg),
+               ),
+             ),
+           ],
+         ),
+         child: GestureDetector(
+-          onTap: () {
+-            if (onChanged != null) {
+-              // toggle completion status
+-              onChanged!(!isCompleted);
+-            }
+-          },
++          onTap: () => onChanged?.call(!isCompleted),
+           child: Container(
++            padding: const EdgeInsets.all(AppSpacing.md),
+             decoration: BoxDecoration(
+-              color: isCompleted
+-                  ? Colors.green
+-                  : Theme.of(context).colorScheme.secondary,
+-              borderRadius: const BorderRadius.only(
+-                topLeft: Radius.circular(8),
+-                topRight: Radius.zero,
+-                bottomLeft: Radius.circular(8),
+-                bottomRight: Radius.zero,
++              color: colorScheme.secondary, // card surface (see theme notes)
++              borderRadius: BorderRadius.circular(AppRadius.lg),
++              border: Border.all(
++                color: colorScheme.outline.withOpacity(isCompleted ? 0 : 1),
+               ),
+             ),
+-            padding: const EdgeInsets.all(12),
+-            child: ListTile(
+-              title: Text(
+-                text,
+-                style: TextStyle(
+-                  color: isCompleted
+-                      ? Colors.white
+-                      : Theme.of(context).colorScheme.inversePrimary,
++            child: Row(
++              children: [
++                // category icon
++                Container(
++                  width: 40,
++                  height: 40,
++                  decoration: BoxDecoration(
++                    color: category.color.withOpacity(0.15),
++                    shape: BoxShape.circle,
++                  ),
++                  child: Icon(category.icon, color: category.color, size: 20),
+                 ),
+-              ),
+-              leading: Checkbox(
+-                activeColor: Colors.green,
+-                value: isCompleted,
+-                onChanged: onChanged,
+-              ),
++                const SizedBox(width: AppSpacing.md),
++                // name + meta row
++                Expanded(
++                  child: Column(
++                    crossAxisAlignment: CrossAxisAlignment.start,
++                    children: [
++                      Text(
++                        text,
++                        style: textTheme.bodyLarge?.copyWith(
++                          decoration: isCompleted
++                              ? TextDecoration.lineThrough
++                              : null,
++                          color: isCompleted
++                              ? colorScheme.onSurfaceVariant
++                              : colorScheme.onSurface,
++                        ),
++                      ),
++                      const SizedBox(height: 2),
++                      Row(
++                        children: [
++                          if (streak > 0) ...[
++                            const Icon(Icons.local_fire_department_rounded,
++                                size: 14, color: Color(0xFFF97316)),
++                            const SizedBox(width: 2),
++                            Text('$streak', style: textTheme.labelSmall),
++                            const SizedBox(width: AppSpacing.sm),
++                          ],
++                          if (targetCount > 1) ...[
++                            Icon(Icons.flag_rounded,
++                                size: 14, color: colorScheme.onSurfaceVariant),
++                            const SizedBox(width: 2),
++                            Text(
++                              '$targetCount${unit != null && unit!.isNotEmpty ? ' ${unit!}' : ''}',
++                              style: textTheme.labelSmall,
++                            ),
++                          ],
++                        ],
++                      ),
++                    ],
++                  ),
++                ),
++                const SizedBox(width: AppSpacing.sm),
++                // completion toggle
++                _CompletionCheck(isCompleted: isCompleted, onTap: () {
++                  onChanged?.call(!isCompleted);
++                }),
++              ],
+             ),
+           ),
+         ),
+@@ -87,3 +142,36 @@ class MyHabitTile extends StatelessWidget {
+     );
+   }
+ }
++
++class _CompletionCheck extends StatelessWidget {
++  final bool isCompleted;
++  final VoidCallback onTap;
++
++  const _CompletionCheck({required this.isCompleted, required this.onTap});
++
++  @override
++  Widget build(BuildContext context) {
++    final colorScheme = Theme.of(context).colorScheme;
++    return GestureDetector(
++      onTap: onTap,
++      child: AnimatedContainer(
++        duration: const Duration(milliseconds: 150),
++        width: 28,
++        height: 28,
++        decoration: BoxDecoration(
++          shape: BoxShape.circle,
++          color: isCompleted ? AppColors.lightSuccess : Colors.transparent,
++          border: Border.all(
++            color: isCompleted
++                ? AppColors.lightSuccess
++                : colorScheme.onSurfaceVariant,
++            width: 1.5,
++          ),
++        ),
++        child: isCompleted
++            ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
++            : null,
++      ),
++    );
++  }
++}
+diff --git a/lib/database/habit_database.dart b/lib/database/habit_database.dart
+index 1e09c70..d72bf31 100644
+--- a/lib/database/habit_database.dart
++++ b/lib/database/habit_database.dart
+@@ -131,10 +131,26 @@ class HabitDatabase extends ChangeNotifier {
+     await readHabits();
+   }
+ 
+-  // UPDATE - edit habit name
+-  Future<void> updateHabitName(int id, String newName) async {
+-    await (db.update(db.habits)..where((h) => h.id.equals(id)))
+-        .write(HabitsCompanion(name: Value(newName)));
++  // UPDATE - edit a habit's name, category, frequency and target
++  Future<void> updateHabit(
++    int id, {
++    required String name,
++    required String category,
++    required String frequencyType,
++    required String frequencyDays,
++    required int targetCount,
++    String? unit,
++  }) async {
++    await (db.update(db.habits)..where((h) => h.id.equals(id))).write(
++      HabitsCompanion(
++        name: Value(name),
++        category: Value(category),
++        frequencyType: Value(frequencyType),
++        frequencyDays: Value(frequencyDays),
++        targetCount: Value(targetCount),
++        unit: Value(unit),
++      ),
++    );
+     // re-read from the database
+     await readHabits();
+   }
+diff --git a/lib/main.dart b/lib/main.dart
+index 0692e22..b3df93e 100644
+--- a/lib/main.dart
++++ b/lib/main.dart
+@@ -1,5 +1,5 @@
+ import 'package:R_HabitTracker/database/habit_database.dart';
+-import 'package:R_HabitTracker/pages/home_page.dart';
++import 'package:R_HabitTracker/pages/root_shell.dart';
+ import 'package:R_HabitTracker/theme/theme_provider.dart';
+ import 'package:flutter/material.dart';
+ import 'package:provider/provider.dart';
+@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
+   Widget build(BuildContext context) {
+     return MaterialApp(
+       debugShowCheckedModeBanner: false,
+-      home: const HomePage(),
++      home: const RootShell(),
+       theme: Provider.of<ThemeProvider>(context).themeData,
+     );
+   }
+diff --git a/lib/pages/home_page.dart b/lib/pages/home_page.dart
+index 487b1e3..efa4f07 100644
+--- a/lib/pages/home_page.dart
++++ b/lib/pages/home_page.dart
+@@ -1,9 +1,14 @@
+-import 'package:R_HabitTracker/components/my_drawer.dart';
++import 'package:R_HabitTracker/components/confirm_delete_sheet.dart';
++import 'package:R_HabitTracker/components/empty_habits_view.dart';
++import 'package:R_HabitTracker/components/habit_form_sheet.dart';
++import 'package:R_HabitTracker/components/home_summary_header.dart';
+ import 'package:R_HabitTracker/components/my_habit_tile.dart';
+ import 'package:R_HabitTracker/components/my_heat_map.dart';
+ import 'package:R_HabitTracker/database/app_database.dart';
+ import 'package:R_HabitTracker/database/habit_database.dart';
++import 'package:R_HabitTracker/utils/habit_category.dart';
+ import 'package:R_HabitTracker/utils/habit_util.dart';
++import 'package:R_HabitTracker/utils/streak_util.dart';
+ import 'package:flutter/material.dart';
+ import 'package:provider/provider.dart';
+ 
+@@ -22,117 +27,52 @@ class _HomePageState extends State<HomePage> {
+     super.initState();
+   }
+ 
+-  final TextEditingController textController = TextEditingController();
+-
+-  void createNewHabit() {
+-    showDialog(
+-      context: context,
+-      builder: (context) => AlertDialog(
+-        content: TextField(
+-          controller: textController,
+-          decoration: const InputDecoration(hintText: "Create new habit"),
+-        ),
+-        actions: [
+-          // cancel button
+-          MaterialButton(
+-            onPressed: () {
+-              textController.clear();
+-              Navigator.pop(context);
+-            },
+-            child: const Text("Cancel"),
+-          ),
+-          // save button
+-          MaterialButton(
+-            onPressed: () {
+-              // get the new habit name
+-              String newHabitName = textController.text;
+-              // and save it to the database
+-              context.read<HabitDatabase>().addHabit(newHabitName);
+-              // pop the dialog
+-              Navigator.pop(context);
+-              // clear the controller
+-              textController.clear();
+-            },
+-            child: const Text("Save"),
+-          ),
+-        ],
+-      ),
+-    );
++  Future<void> createNewHabit() async {
++    final result = await showHabitFormSheet(context);
++    if (result == null || !mounted) return;
++    context.read<HabitDatabase>().addHabit(
++          result.name,
++          category: result.category,
++          frequencyType: result.frequencyType,
++          frequencyDays: result.frequencyDays,
++          targetCount: result.targetCount,
++          unit: result.unit,
++        );
+   }
+ 
+   void checkHabitOnAndOff(bool? value, Habit habit) {
+-    // update habit completion status
+     if (value != null) {
+       context.read<HabitDatabase>().updateHabitCompletion(habit.id, value);
+     }
+   }
+ 
+-  // edit habit box
+-  void editHabitBox(Habit habit) {
+-    textController.text = habit.name;
+-    showDialog(
+-      context: context,
+-      builder: (context) => AlertDialog(
+-        content: TextField(
+-          controller: textController,
+-        ),
+-        actions: [
+-          // cancel button
+-          MaterialButton(
+-            onPressed: () {
+-              textController.clear();
+-              Navigator.pop(context);
+-            },
+-            child: const Text("Cancel"),
+-          ),
+-          // save button
+-          MaterialButton(
+-            onPressed: () {
+-              // get the new habit name
+-              String newHabitName = textController.text;
+-              // and save it to the database
+-              context
+-                  .read<HabitDatabase>()
+-                  .updateHabitName(habit.id, newHabitName);
+-              // pop the dialog
+-              Navigator.pop(context);
+-              // clear the controller
+-              textController.clear();
+-            },
+-            child: const Text("Save"),
+-          ),
+-        ],
+-      ),
++  Future<void> editHabitBox(Habit habit) async {
++    final result = await showHabitFormSheet(
++      context,
++      initialName: habit.name,
++      initialCategory: habit.category,
++      initialFrequencyType: habit.frequencyType,
++      initialFrequencyDays: habit.frequencyDays,
++      initialTargetCount: habit.targetCount,
++      initialUnit: habit.unit,
+     );
++    if (result == null || !mounted) return;
++    context.read<HabitDatabase>().updateHabit(
++          habit.id,
++          name: result.name,
++          category: result.category,
++          frequencyType: result.frequencyType,
++          frequencyDays: result.frequencyDays,
++          targetCount: result.targetCount,
++          unit: result.unit,
++        );
+   }
+ 
+-  // delete habit box
+-
+-  void deleteHabitBox(Habit habit) {
+-    showDialog(
+-      context: context,
+-      builder: (context) => AlertDialog(
+-        title: const Text("Are you sure you want to delete?"),
+-        actions: [
+-          // cancel button
+-          MaterialButton(
+-            onPressed: () {
+-              Navigator.pop(context);
+-            },
+-            child: const Text("Cancel"),
+-          ),
+-          // delete button
+-          MaterialButton(
+-            onPressed: () {
+-              context.read<HabitDatabase>().deleteHabit(habit.id);
+-              // pop the dialog
+-              Navigator.pop(context);
+-            },
+-            child: const Text("Delete"),
+-          ),
+-        ],
+-      ),
+-    );
++  Future<void> deleteHabitBox(Habit habit) async {
++    final confirmed =
++        await showConfirmDeleteSheet(context, habitName: habit.name);
++    if (!confirmed || !mounted) return;
++    context.read<HabitDatabase>().deleteHabit(habit.id);
+   }
+ 
+   @override
+@@ -140,72 +80,80 @@ class _HomePageState extends State<HomePage> {
+     return Scaffold(
+       appBar: AppBar(
+         backgroundColor: Colors.transparent,
+-        foregroundColor: Theme.of(context).colorScheme.inversePrimary,
++        foregroundColor: Theme.of(context).colorScheme.onSurface,
+         elevation: 0,
+       ),
+       backgroundColor: Theme.of(context).colorScheme.surface,
+-      drawer: const MyDrawer(),
+       floatingActionButton: FloatingActionButton(
+         backgroundColor: Theme.of(context).colorScheme.primary,
+         elevation: 0,
+         onPressed: createNewHabit,
+-        child: Icon(
+-          Icons.add,
+-          color: Theme.of(context).colorScheme.inversePrimary,
+-        ),
++        child: const Icon(Icons.add_rounded, color: Colors.white),
+       ),
+-      body: ListView(children: [
+-        // HEATMAP
+-        _buildHeatMap(),
+-        // HABIT LIST
+-        _buildHabitList(),
+-      ]),
++      body: Consumer<HabitDatabase>(
++        builder: (context, habitDatabase, _) {
++          if (habitDatabase.currentHabits.isEmpty) {
++            return EmptyHabitsView(onCreatePressed: createNewHabit);
++          }
++          return ListView(
++            children: [
++              _buildSummaryHeader(habitDatabase),
++              _buildHeatMap(habitDatabase),
++              _buildHabitList(habitDatabase),
++              const SizedBox(height: 100),
++            ],
++          );
++        },
++      ),
++    );
++  }
++
++  Widget _buildSummaryHeader(HabitDatabase habitDatabase) {
++    final habits = habitDatabase.currentHabits;
++    final completedToday = habits
++        .where((h) =>
++            isHabitCompletedToday(habitDatabase.completedDaysFor(h.id)))
++        .length;
++    return HomeSummaryHeader(
++      completedCount: completedToday,
++      totalCount: habits.length,
+     );
+   }
+ 
+-  Widget _buildHeatMap() {
+-    // habit database
+-    final habitDatabase = context.watch<HabitDatabase>();
+-    // return a heatmap UI
++  Widget _buildHeatMap(HabitDatabase habitDatabase) {
+     return FutureBuilder<DateTime?>(
+       future: habitDatabase.getFirstLaunch(),
+       builder: (context, snapshot) {
+-        // once data is availbe -> build heat map
+         if (snapshot.hasData) {
+           return MyHeatMap(
+             startDate: snapshot.data!,
+             datasets: prepareHeatMapDataset(habitDatabase.completedDaysByHabit),
+           );
+         }
+-        // handle case no data is returned
+-        else {
+-          return Container();
+-        }
++        return Container();
+       },
+     );
+   }
+ 
+-  Widget _buildHabitList() {
+-    // habit database
+-    final habitDatabase = context.watch<HabitDatabase>();
+-    // current Habits
++  Widget _buildHabitList(HabitDatabase habitDatabase) {
+     List<Habit> currentHabits = habitDatabase.currentHabits;
+-    // return list of habit UI
+     return ListView.builder(
+       itemCount: currentHabits.length,
+       shrinkWrap: true,
+       physics: const NeverScrollableScrollPhysics(),
+       itemBuilder: (context, index) {
+-        // get each individual habit
+         final habit = currentHabits[index];
+-        // check if the habit is completed today
+-        bool isCompletedToday = isHabitCompletedToday(
+-          habitDatabase.completedDaysFor(habit.id),
+-        );
+-        // return habit tile UI
++        final completedDays = habitDatabase.completedDaysFor(habit.id);
++        final scheduledDays = parseFrequencyDays(habit.frequencyDays);
++        bool isCompletedToday = isHabitCompletedToday(completedDays);
++
+         return MyHabitTile(
+           isCompleted: isCompletedToday,
+           text: habit.name,
++          category: habitCategoryById(habit.category),
++          targetCount: habit.targetCount,
++          unit: habit.unit,
++          streak: currentStreak(completedDays, scheduledDays),
+           onChanged: (value) => checkHabitOnAndOff(value, habit),
+           onEditPressed: (context) => editHabitBox(habit),
+           onDeletePressed: (context) => deleteHabitBox(habit),
+diff --git a/lib/pages/root_shell.dart b/lib/pages/root_shell.dart
+new file mode 100644
+index 0000000..335d27d
+--- /dev/null
++++ b/lib/pages/root_shell.dart
+@@ -0,0 +1,73 @@
++import 'package:R_HabitTracker/pages/home_page.dart';
++import 'package:R_HabitTracker/pages/settings_page.dart';
++import 'package:R_HabitTracker/pages/stats_page.dart';
++import 'package:R_HabitTracker/theme/app_spacing.dart';
++import 'package:flutter/material.dart';
++import 'package:google_nav_bar/google_nav_bar.dart';
++
++/// Root navigation shell — replaces the old side [Drawer] with a bottom
++/// nav bar (Home / Stats / Réglages) built on google_nav_bar.
++class RootShell extends StatefulWidget {
++  const RootShell({super.key});
++
++  @override
++  State<RootShell> createState() => _RootShellState();
++}
++
++class _RootShellState extends State<RootShell> {
++  int _index = 0;
++
++  static const _pages = [
++    HomePage(),
++    StatsPage(),
++    SettingsPage(),
++  ];
++
++  @override
++  Widget build(BuildContext context) {
++    final colorScheme = Theme.of(context).colorScheme;
++
++    return Scaffold(
++      backgroundColor: colorScheme.surface,
++      body: IndexedStack(index: _index, children: _pages),
++      bottomNavigationBar: Container(
++        decoration: BoxDecoration(
++          color: colorScheme.secondary, // card-role surface, see theme notes
++          boxShadow: [
++            BoxShadow(
++              color: Colors.black.withOpacity(0.06),
++              blurRadius: 12,
++              offset: const Offset(0, -2),
++            ),
++          ],
++        ),
++        child: SafeArea(
++          child: Padding(
++            padding: const EdgeInsets.symmetric(
++              horizontal: AppSpacing.md,
++              vertical: AppSpacing.sm,
++            ),
++            child: GNav(
++              gap: AppSpacing.sm,
++              activeColor: Colors.white,
++              color: colorScheme.onSurfaceVariant,
++              tabBackgroundColor: colorScheme.primary,
++              tabBorderRadius: AppRadius.full,
++              padding: const EdgeInsets.symmetric(
++                horizontal: AppSpacing.lg,
++                vertical: AppSpacing.sm,
++              ),
++              selectedIndex: _index,
++              onTabChange: (i) => setState(() => _index = i),
++              tabs: const [
++                GButton(icon: Icons.home_rounded, text: 'Accueil'),
++                GButton(icon: Icons.insights_rounded, text: 'Stats'),
++                GButton(icon: Icons.settings_rounded, text: 'Réglages'),
++              ],
++            ),
++          ),
++        ),
++      ),
++    );
++  }
++}
+diff --git a/lib/pages/settings_page.dart b/lib/pages/settings_page.dart
+index 04f09c8..4be7f46 100644
+--- a/lib/pages/settings_page.dart
++++ b/lib/pages/settings_page.dart
+@@ -1,3 +1,4 @@
++import 'package:R_HabitTracker/theme/app_spacing.dart';
+ import 'package:R_HabitTracker/theme/theme_provider.dart';
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/material.dart';
+@@ -8,46 +9,43 @@ class SettingsPage extends StatelessWidget {
+ 
+   @override
+   Widget build(BuildContext context) {
++    final colorScheme = Theme.of(context).colorScheme;
++    final textTheme = Theme.of(context).textTheme;
++
+     return Scaffold(
+-      appBar: AppBar(
+-        title: const Text("Settings"),
+-        foregroundColor: Theme.of(context).colorScheme.inversePrimary,
+-        backgroundColor: Colors.transparent,
+-        elevation: 0,
+-      ),
+-      backgroundColor: Theme.of(context).colorScheme.surface,
+-      body: Column(
+-        children: [
+-          Container(
+-            padding: const EdgeInsets.all(18),
+-            decoration: BoxDecoration(
+-              color: Theme.of(context).colorScheme.secondary,
+-              borderRadius: BorderRadius.circular(12),
+-            ),
+-            margin: const EdgeInsets.only(top: 25, left: 25, right: 25),
+-            child: Row(
+-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+-              children: [
+-                //dark mode text
+-                Text(
+-                  "Dark mode",
+-                  style: TextStyle(
+-                    color: Theme.of(context).colorScheme.inversePrimary,
+-                    fontSize: 18,
+-                  ),
++      backgroundColor: colorScheme.surface,
++      body: SafeArea(
++        child: Padding(
++          padding: const EdgeInsets.all(AppSpacing.xl),
++          child: Column(
++            crossAxisAlignment: CrossAxisAlignment.start,
++            children: [
++              Text('Réglages', style: textTheme.headlineMedium),
++              const SizedBox(height: AppSpacing.lg),
++              Container(
++                padding: const EdgeInsets.all(AppSpacing.lg),
++                decoration: BoxDecoration(
++                  color: colorScheme.secondary,
++                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                 ),
+-                // switch icon
+-                CupertinoSwitch(
+-                  value: Provider.of<ThemeProvider>(context, listen: false)
+-                      .isDakMode,
+-                  onChanged: (value) =>
+-                      Provider.of<ThemeProvider>(context, listen: false)
+-                          .toggleTheme(),
++                child: Row(
++                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
++                  children: [
++                    Text('Mode sombre', style: textTheme.bodyLarge),
++                    CupertinoSwitch(
++                      activeColor: colorScheme.primary,
++                      value: Provider.of<ThemeProvider>(context, listen: false)
++                          .isDakMode,
++                      onChanged: (value) =>
++                          Provider.of<ThemeProvider>(context, listen: false)
++                              .toggleTheme(),
++                    ),
++                  ],
+                 ),
+-              ],
+-            ),
++              ),
++            ],
+           ),
+-        ],
++        ),
+       ),
+     );
+   }
+diff --git a/lib/pages/stats_page.dart b/lib/pages/stats_page.dart
+new file mode 100644
+index 0000000..104d8e1
+--- /dev/null
++++ b/lib/pages/stats_page.dart
+@@ -0,0 +1,168 @@
++import 'package:R_HabitTracker/database/app_database.dart';
++import 'package:R_HabitTracker/database/habit_database.dart';
++import 'package:R_HabitTracker/theme/app_spacing.dart';
++import 'package:R_HabitTracker/utils/habit_category.dart';
++import 'package:R_HabitTracker/utils/streak_util.dart';
++import 'package:flutter/material.dart';
++import 'package:provider/provider.dart';
++
++class StatsPage extends StatefulWidget {
++  const StatsPage({super.key});
++
++  @override
++  State<StatsPage> createState() => _StatsPageState();
++}
++
++class _StatsPageState extends State<StatsPage> {
++  @override
++  void initState() {
++    Provider.of<HabitDatabase>(context, listen: false).readHabits();
++    super.initState();
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    final colorScheme = Theme.of(context).colorScheme;
++    final textTheme = Theme.of(context).textTheme;
++
++    return Scaffold(
++      backgroundColor: colorScheme.surface,
++      body: SafeArea(
++        child: Consumer<HabitDatabase>(
++          builder: (context, habitDatabase, _) {
++            final habits = habitDatabase.currentHabits;
++
++            if (habits.isEmpty) {
++              return Center(
++                child: Text(
++                  'Crée une habitude pour voir tes stats ici.',
++                  style: textTheme.bodyMedium,
++                ),
++              );
++            }
++
++            final weekRate = _weeklyCompletionRate(habitDatabase);
++
++            return ListView(
++              padding: const EdgeInsets.all(AppSpacing.xl),
++              children: [
++                Text('Statistiques', style: textTheme.headlineMedium),
++                const SizedBox(height: AppSpacing.lg),
++                Container(
++                  padding: const EdgeInsets.all(AppSpacing.lg),
++                  decoration: BoxDecoration(
++                    color: colorScheme.secondary,
++                    borderRadius: BorderRadius.circular(AppRadius.lg),
++                  ),
++                  child: Row(
++                    children: [
++                      Expanded(
++                        child: Column(
++                          crossAxisAlignment: CrossAxisAlignment.start,
++                          children: [
++                            Text('Cette semaine', style: textTheme.bodyMedium),
++                            const SizedBox(height: AppSpacing.xs),
++                            Text(
++                              '${(weekRate * 100).round()}%',
++                              style: textTheme.displayLarge,
++                            ),
++                            Text('de complétion', style: textTheme.bodyMedium),
++                          ],
++                        ),
++                      ),
++                      SizedBox(
++                        width: 64,
++                        height: 64,
++                        child: CircularProgressIndicator(
++                          value: weekRate,
++                          strokeWidth: 6,
++                          backgroundColor: colorScheme.outline,
++                          valueColor:
++                              AlwaysStoppedAnimation(colorScheme.primary),
++                        ),
++                      ),
++                    ],
++                  ),
++                ),
++                const SizedBox(height: AppSpacing.xl),
++                Text('Séries par habitude', style: textTheme.titleLarge),
++                const SizedBox(height: AppSpacing.sm),
++                ...habits.map((habit) {
++                  final completedDays = habitDatabase.completedDaysFor(habit.id);
++                  final scheduledDays = parseFrequencyDays(habit.frequencyDays);
++                  final category = habitCategoryById(habit.category);
++                  final current = currentStreak(completedDays, scheduledDays);
++                  final best = bestStreak(completedDays, scheduledDays);
++
++                  return Container(
++                    margin: const EdgeInsets.only(bottom: AppSpacing.sm),
++                    padding: const EdgeInsets.all(AppSpacing.md),
++                    decoration: BoxDecoration(
++                      color: colorScheme.secondary,
++                      borderRadius: BorderRadius.circular(AppRadius.lg),
++                    ),
++                    child: Row(
++                      children: [
++                        Container(
++                          width: 36,
++                          height: 36,
++                          decoration: BoxDecoration(
++                            color: category.color.withOpacity(0.15),
++                            shape: BoxShape.circle,
++                          ),
++                          child: Icon(category.icon,
++                              color: category.color, size: 18),
++                        ),
++                        const SizedBox(width: AppSpacing.md),
++                        Expanded(
++                          child: Text(habit.name, style: textTheme.bodyLarge),
++                        ),
++                        Column(
++                          crossAxisAlignment: CrossAxisAlignment.end,
++                          children: [
++                            Text('🔥 $current', style: textTheme.bodyMedium),
++                            Text('Record : $best', style: textTheme.labelSmall),
++                          ],
++                        ),
++                      ],
++                    ),
++                  );
++                }),
++              ],
++            );
++          },
++        ),
++      ),
++    );
++  }
++
++  // fraction of scheduled occurrences completed over the last 7 days,
++  // across all habits.
++  double _weeklyCompletionRate(HabitDatabase habitDatabase) {
++    final today = DateTime.now();
++    final habits = habitDatabase.currentHabits;
++
++    int scheduled = 0;
++    int completed = 0;
++
++    for (final habit in habits) {
++      final scheduledDays = parseFrequencyDays(habit.frequencyDays);
++      final completedSet = habitDatabase
++          .completedDaysFor(habit.id)
++          .map((d) => DateTime(d.year, d.month, d.day))
++          .toSet();
++
++      for (int i = 0; i < 7; i++) {
++        final day = DateTime(today.year, today.month, today.day)
++            .subtract(Duration(days: i));
++        if (scheduledDays.contains(day.weekday)) {
++          scheduled++;
++          if (completedSet.contains(day)) completed++;
++        }
++      }
++    }
++
++    if (scheduled == 0) return 0;
++    return completed / scheduled;
++  }
++}
+diff --git a/lib/utils/habit_category.dart b/lib/utils/habit_category.dart
+new file mode 100644
+index 0000000..c35eaf3
+--- /dev/null
++++ b/lib/utils/habit_category.dart
+@@ -0,0 +1,61 @@
++import 'package:flutter/material.dart';
++
++class HabitCategory {
++  final String id;
++  final String label;
++  final IconData icon;
++  final Color color;
++
++  const HabitCategory({
++    required this.id,
++    required this.label,
++    required this.icon,
++    required this.color,
++  });
++}
++
++// Fixed set of categories for now — kept small and curated rather than
++// user-defined, since a free-form category manager is its own feature.
++const List<HabitCategory> kHabitCategories = [
++  HabitCategory(
++    id: 'health',
++    label: 'Santé',
++    icon: Icons.favorite_rounded,
++    color: Color(0xFFEF4444),
++  ),
++  HabitCategory(
++    id: 'mindfulness',
++    label: 'Bien-être',
++    icon: Icons.self_improvement_rounded,
++    color: Color(0xFF8B5CF6),
++  ),
++  HabitCategory(
++    id: 'fitness',
++    label: 'Sport',
++    icon: Icons.fitness_center_rounded,
++    color: Color(0xFFFF7A59),
++  ),
++  HabitCategory(
++    id: 'work',
++    label: 'Travail',
++    icon: Icons.work_rounded,
++    color: Color(0xFF0F9B8E),
++  ),
++  HabitCategory(
++    id: 'learning',
++    label: 'Apprentissage',
++    icon: Icons.menu_book_rounded,
++    color: Color(0xFF3B82F6),
++  ),
++  HabitCategory(
++    id: 'other',
++    label: 'Autre',
++    icon: Icons.star_rounded,
++    color: Color(0xFF6B6963),
++  ),
++];
++
++HabitCategory habitCategoryById(String id) => kHabitCategories.firstWhere(
++      (c) => c.id == id,
++      orElse: () => kHabitCategories.last,
++    );
+diff --git a/lib/utils/streak_util.dart b/lib/utils/streak_util.dart
+new file mode 100644
+index 0000000..002984b
+--- /dev/null
++++ b/lib/utils/streak_util.dart
+@@ -0,0 +1,70 @@
++// Streak helpers.
++//
++// A habit is only "due" on its scheduled weekdays (frequencyDays, ISO
++// 1=Mon..7=Sun) — streaks only look at those days, so a weekly habit
++// scheduled for Mon/Wed/Fri isn't penalized for Tuesdays.
++
++List<int> parseFrequencyDays(String frequencyDays) {
++  return frequencyDays
++      .split(',')
++      .map((s) => s.trim())
++      .where((s) => s.isNotEmpty)
++      .map(int.parse)
++      .toList();
++}
++
++DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
++
++// current streak, counted backwards from today. Today doesn't break the
++// streak if it's not completed yet — it's just not counted.
++int currentStreak(List<DateTime> completedDays, List<int> scheduledWeekdays) {
++  if (completedDays.isEmpty || scheduledWeekdays.isEmpty) return 0;
++
++  final completedSet = completedDays.map(_dateOnly).toSet();
++  final today = _dateOnly(DateTime.now());
++
++  int streak = 0;
++  DateTime day = today;
++
++  while (true) {
++    if (scheduledWeekdays.contains(day.weekday)) {
++      if (completedSet.contains(day)) {
++        streak++;
++      } else if (day == today) {
++        // today not done yet — don't break the streak, just skip it
++      } else {
++        break;
++      }
++    }
++    day = day.subtract(const Duration(days: 1));
++    // safety cap so a data glitch can't loop forever
++    if (today.difference(day).inDays > 3650) break;
++  }
++  return streak;
++}
++
++// longest streak ever recorded for this habit.
++int bestStreak(List<DateTime> completedDays, List<int> scheduledWeekdays) {
++  if (completedDays.isEmpty || scheduledWeekdays.isEmpty) return 0;
++
++  final completedSet = completedDays.map(_dateOnly).toSet();
++  final sortedDates = completedSet.toList()..sort();
++
++  int best = 0;
++  int current = 0;
++  DateTime cursor = sortedDates.first;
++  final last = sortedDates.last;
++
++  while (!cursor.isAfter(last)) {
++    if (scheduledWeekdays.contains(cursor.weekday)) {
++      if (completedSet.contains(cursor)) {
++        current++;
++        if (current > best) best = current;
++      } else {
++        current = 0;
++      }
++    }
++    cursor = cursor.add(const Duration(days: 1));
++  }
++  return best;
++}

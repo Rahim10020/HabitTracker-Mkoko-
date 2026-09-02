@@ -1,9 +1,14 @@
-import 'package:R_HabitTracker/components/my_drawer.dart';
+import 'package:R_HabitTracker/components/confirm_delete_sheet.dart';
+import 'package:R_HabitTracker/components/empty_habits_view.dart';
+import 'package:R_HabitTracker/components/habit_form_sheet.dart';
+import 'package:R_HabitTracker/components/home_summary_header.dart';
 import 'package:R_HabitTracker/components/my_habit_tile.dart';
 import 'package:R_HabitTracker/components/my_heat_map.dart';
 import 'package:R_HabitTracker/database/app_database.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
+import 'package:R_HabitTracker/utils/habit_category.dart';
 import 'package:R_HabitTracker/utils/habit_util.dart';
+import 'package:R_HabitTracker/utils/streak_util.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -22,117 +27,52 @@ class _HomePageState extends State<HomePage> {
     super.initState();
   }
 
-  final TextEditingController textController = TextEditingController();
-
-  void createNewHabit() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        content: TextField(
-          controller: textController,
-          decoration: const InputDecoration(hintText: "Create new habit"),
-        ),
-        actions: [
-          // cancel button
-          MaterialButton(
-            onPressed: () {
-              textController.clear();
-              Navigator.pop(context);
-            },
-            child: const Text("Cancel"),
-          ),
-          // save button
-          MaterialButton(
-            onPressed: () {
-              // get the new habit name
-              String newHabitName = textController.text;
-              // and save it to the database
-              context.read<HabitDatabase>().addHabit(newHabitName);
-              // pop the dialog
-              Navigator.pop(context);
-              // clear the controller
-              textController.clear();
-            },
-            child: const Text("Save"),
-          ),
-        ],
-      ),
-    );
+  Future<void> createNewHabit() async {
+    final result = await showHabitFormSheet(context);
+    if (result == null || !mounted) return;
+    context.read<HabitDatabase>().addHabit(
+          result.name,
+          category: result.category,
+          frequencyType: result.frequencyType,
+          frequencyDays: result.frequencyDays,
+          targetCount: result.targetCount,
+          unit: result.unit,
+        );
   }
 
   void checkHabitOnAndOff(bool? value, Habit habit) {
-    // update habit completion status
     if (value != null) {
       context.read<HabitDatabase>().updateHabitCompletion(habit.id, value);
     }
   }
 
-  // edit habit box
-  void editHabitBox(Habit habit) {
-    textController.text = habit.name;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        content: TextField(
-          controller: textController,
-        ),
-        actions: [
-          // cancel button
-          MaterialButton(
-            onPressed: () {
-              textController.clear();
-              Navigator.pop(context);
-            },
-            child: const Text("Cancel"),
-          ),
-          // save button
-          MaterialButton(
-            onPressed: () {
-              // get the new habit name
-              String newHabitName = textController.text;
-              // and save it to the database
-              context
-                  .read<HabitDatabase>()
-                  .updateHabitName(habit.id, newHabitName);
-              // pop the dialog
-              Navigator.pop(context);
-              // clear the controller
-              textController.clear();
-            },
-            child: const Text("Save"),
-          ),
-        ],
-      ),
+  Future<void> editHabitBox(Habit habit) async {
+    final result = await showHabitFormSheet(
+      context,
+      initialName: habit.name,
+      initialCategory: habit.category,
+      initialFrequencyType: habit.frequencyType,
+      initialFrequencyDays: habit.frequencyDays,
+      initialTargetCount: habit.targetCount,
+      initialUnit: habit.unit,
     );
+    if (result == null || !mounted) return;
+    context.read<HabitDatabase>().updateHabit(
+          habit.id,
+          name: result.name,
+          category: result.category,
+          frequencyType: result.frequencyType,
+          frequencyDays: result.frequencyDays,
+          targetCount: result.targetCount,
+          unit: result.unit,
+        );
   }
 
-  // delete habit box
-
-  void deleteHabitBox(Habit habit) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Are you sure you want to delete?"),
-        actions: [
-          // cancel button
-          MaterialButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text("Cancel"),
-          ),
-          // delete button
-          MaterialButton(
-            onPressed: () {
-              context.read<HabitDatabase>().deleteHabit(habit.id);
-              // pop the dialog
-              Navigator.pop(context);
-            },
-            child: const Text("Delete"),
-          ),
-        ],
-      ),
-    );
+  Future<void> deleteHabitBox(Habit habit) async {
+    final confirmed =
+        await showConfirmDeleteSheet(context, habitName: habit.name);
+    if (!confirmed || !mounted) return;
+    context.read<HabitDatabase>().deleteHabit(habit.id);
   }
 
   @override
@@ -140,72 +80,80 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        foregroundColor: Theme.of(context).colorScheme.inversePrimary,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         elevation: 0,
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,
-      drawer: const MyDrawer(),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Theme.of(context).colorScheme.primary,
         elevation: 0,
         onPressed: createNewHabit,
-        child: Icon(
-          Icons.add,
-          color: Theme.of(context).colorScheme.inversePrimary,
-        ),
+        child: const Icon(Icons.add_rounded, color: Colors.white),
       ),
-      body: ListView(children: [
-        // HEATMAP
-        _buildHeatMap(),
-        // HABIT LIST
-        _buildHabitList(),
-      ]),
+      body: Consumer<HabitDatabase>(
+        builder: (context, habitDatabase, _) {
+          if (habitDatabase.currentHabits.isEmpty) {
+            return EmptyHabitsView(onCreatePressed: createNewHabit);
+          }
+          return ListView(
+            children: [
+              _buildSummaryHeader(habitDatabase),
+              _buildHeatMap(habitDatabase),
+              _buildHabitList(habitDatabase),
+              const SizedBox(height: 100),
+            ],
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildHeatMap() {
-    // habit database
-    final habitDatabase = context.watch<HabitDatabase>();
-    // return a heatmap UI
+  Widget _buildSummaryHeader(HabitDatabase habitDatabase) {
+    final habits = habitDatabase.currentHabits;
+    final completedToday = habits
+        .where((h) =>
+            isHabitCompletedToday(habitDatabase.completedDaysFor(h.id)))
+        .length;
+    return HomeSummaryHeader(
+      completedCount: completedToday,
+      totalCount: habits.length,
+    );
+  }
+
+  Widget _buildHeatMap(HabitDatabase habitDatabase) {
     return FutureBuilder<DateTime?>(
       future: habitDatabase.getFirstLaunch(),
       builder: (context, snapshot) {
-        // once data is availbe -> build heat map
         if (snapshot.hasData) {
           return MyHeatMap(
             startDate: snapshot.data!,
             datasets: prepareHeatMapDataset(habitDatabase.completedDaysByHabit),
           );
         }
-        // handle case no data is returned
-        else {
-          return Container();
-        }
+        return Container();
       },
     );
   }
 
-  Widget _buildHabitList() {
-    // habit database
-    final habitDatabase = context.watch<HabitDatabase>();
-    // current Habits
+  Widget _buildHabitList(HabitDatabase habitDatabase) {
     List<Habit> currentHabits = habitDatabase.currentHabits;
-    // return list of habit UI
     return ListView.builder(
       itemCount: currentHabits.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
-        // get each individual habit
         final habit = currentHabits[index];
-        // check if the habit is completed today
-        bool isCompletedToday = isHabitCompletedToday(
-          habitDatabase.completedDaysFor(habit.id),
-        );
-        // return habit tile UI
+        final completedDays = habitDatabase.completedDaysFor(habit.id);
+        final scheduledDays = parseFrequencyDays(habit.frequencyDays);
+        bool isCompletedToday = isHabitCompletedToday(completedDays);
+
         return MyHabitTile(
           isCompleted: isCompletedToday,
           text: habit.name,
+          category: habitCategoryById(habit.category),
+          targetCount: habit.targetCount,
+          unit: habit.unit,
+          streak: currentStreak(completedDays, scheduledDays),
           onChanged: (value) => checkHabitOnAndOff(value, habit),
           onEditPressed: (context) => editHabitBox(habit),
           onDeletePressed: (context) => deleteHabitBox(habit),

@@ -131,10 +131,26 @@ class HabitDatabase extends ChangeNotifier {
     await readHabits();
   }
 
-  // UPDATE - edit habit name
-  Future<void> updateHabitName(int id, String newName) async {
-    await (db.update(db.habits)..where((h) => h.id.equals(id)))
-        .write(HabitsCompanion(name: Value(newName)));
+  // UPDATE - edit a habit's name, category, frequency and target
+  Future<void> updateHabit(
+    int id, {
+    required String name,
+    required String category,
+    required String frequencyType,
+    required String frequencyDays,
+    required int targetCount,
+    String? unit,
+  }) async {
+    await (db.update(db.habits)..where((h) => h.id.equals(id))).write(
+      HabitsCompanion(
+        name: Value(name),
+        category: Value(category),
+        frequencyType: Value(frequencyType),
+        frequencyDays: Value(frequencyDays),
+        targetCount: Value(targetCount),
+        unit: Value(unit),
+      ),
+    );
     // re-read from the database
     await readHabits();
   }
