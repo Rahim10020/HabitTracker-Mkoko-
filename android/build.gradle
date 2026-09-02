@@ -8,10 +8,15 @@ allprojects {
 rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
-
-subprojects {
     project.evaluationDependsOn(":app")
+
+    afterEvaluate { project ->
+        if (project.name == "isar_flutter_libs" && project.hasProperty("android")) {
+            project.android {
+                namespace "dev.isar.isar_flutter_libs"
+            }
+        }
+    }
 }
 
 tasks.register("clean", Delete) {
