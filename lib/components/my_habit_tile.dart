@@ -70,7 +70,7 @@ class MyHabitTile extends StatelessWidget {
         color: colorScheme.secondary, // card surface (see theme notes)
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
-          color: colorScheme.outline.withOpacity(isCompleted ? 0 : 1),
+          color: colorScheme.outline.withValues(alpha: isCompleted ? 0 : 1),
         ),
       ),
       child: Row(
@@ -85,7 +85,7 @@ class MyHabitTile extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: category.color.withOpacity(0.15),
+              color: category.color.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(category.icon, color: category.color, size: 20),
@@ -99,8 +99,7 @@ class MyHabitTile extends StatelessWidget {
                 Text(
                   text,
                   style: textTheme.bodyLarge?.copyWith(
-                    decoration:
-                        isCompleted ? TextDecoration.lineThrough : null,
+                    decoration: isCompleted ? TextDecoration.lineThrough : null,
                     color: isCompleted
                         ? colorScheme.onSurfaceVariant
                         : colorScheme.onSurface,
@@ -145,7 +144,8 @@ class MyHabitTile extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: (currentValue / targetCount).clamp(0.0, 1.0),
                       minHeight: 5,
-                      backgroundColor: colorScheme.outline.withOpacity(0.3),
+                      backgroundColor:
+                          colorScheme.outline.withValues(alpha: 0.3),
                       valueColor: AlwaysStoppedAnimation(
                         isCompleted
                             ? AppColors.lightSuccess
@@ -337,15 +337,15 @@ class _StepperButton extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: enabled
-              ? colorScheme.primary.withOpacity(0.12)
-              : colorScheme.outline.withOpacity(0.08),
+              ? colorScheme.primary.withValues(alpha: 0.12)
+              : colorScheme.outline.withValues(alpha: 0.08),
         ),
         child: Icon(
           icon,
           size: 16,
           color: enabled
               ? colorScheme.primary
-              : colorScheme.onSurfaceVariant.withOpacity(0.4),
+              : colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
         ),
       ),
     );

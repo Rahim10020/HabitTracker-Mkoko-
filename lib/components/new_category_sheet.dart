@@ -96,7 +96,7 @@ class _NewCategorySheetState extends State<_NewCategorySheet> {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: selectedColor.withOpacity(0.15),
+                      color: selectedColor.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(selectedIcon, color: selectedColor, size: 22),
@@ -174,8 +174,7 @@ class _NewCategorySheetState extends State<_NewCategorySheet> {
                         shape: BoxShape.circle,
                         color: color,
                         border: selected
-                            ? Border.all(
-                                color: colorScheme.onSurface, width: 2)
+                            ? Border.all(color: colorScheme.onSurface, width: 2)
                             : null,
                       ),
                       child: selected
@@ -193,8 +192,7 @@ class _NewCategorySheetState extends State<_NewCategorySheet> {
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed:
-                      labelController.text.trim().isEmpty ? null : _save,
+                  onPressed: labelController.text.trim().isEmpty ? null : _save,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     foregroundColor: Colors.white,
@@ -209,8 +207,7 @@ class _NewCategorySheetState extends State<_NewCategorySheet> {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation(Colors.white),
+                            valueColor: AlwaysStoppedAnimation(Colors.white),
                           ),
                         )
                       : const Text('Créer la catégorie'),
