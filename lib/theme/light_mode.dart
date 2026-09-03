@@ -22,38 +22,38 @@ ThemeData lightMode = ThemeData(
     outline: AppColors.lightBorder,
     inversePrimary: AppColors.lightTextPrimary,
   ),
-  textTheme: GoogleFonts.manropeTextTheme().copyWith(
-    displayLarge: GoogleFonts.manrope(
+  textTheme: GoogleFonts.snigletTextTheme().copyWith(
+    displayLarge: GoogleFonts.sniglet(
       fontSize: 32,
       height: 40 / 32,
       fontWeight: FontWeight.w700,
       color: AppColors.lightTextPrimary,
     ),
-    headlineMedium: GoogleFonts.manrope(
+    headlineMedium: GoogleFonts.sniglet(
       fontSize: 24,
       height: 32 / 24,
       fontWeight: FontWeight.w600,
       color: AppColors.lightTextPrimary,
     ),
-    titleLarge: GoogleFonts.manrope(
+    titleLarge: GoogleFonts.sniglet(
       fontSize: 18,
       height: 24 / 18,
       fontWeight: FontWeight.w600,
       color: AppColors.lightTextPrimary,
     ),
-    bodyLarge: GoogleFonts.manrope(
+    bodyLarge: GoogleFonts.sniglet(
       fontSize: 16,
       height: 24 / 16,
       fontWeight: FontWeight.w400,
       color: AppColors.lightTextPrimary,
     ),
-    bodyMedium: GoogleFonts.manrope(
+    bodyMedium: GoogleFonts.sniglet(
       fontSize: 14,
       height: 20 / 14,
       fontWeight: FontWeight.w400,
       color: AppColors.lightTextSecondary,
     ),
-    labelSmall: GoogleFonts.manrope(
+    labelSmall: GoogleFonts.sniglet(
       fontSize: 12,
       height: 16 / 12,
       fontWeight: FontWeight.w500,
