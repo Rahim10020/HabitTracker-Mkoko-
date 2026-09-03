@@ -2,11 +2,15 @@ import 'package:R_HabitTracker/database/app_database.dart';
 import 'package:R_HabitTracker/services/notification_service.dart';
 import 'package:R_HabitTracker/services/widget_service.dart';
 import 'package:R_HabitTracker/utils/habit_category.dart';
+import 'package:R_HabitTracker/utils/streak_util.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 
 class HabitDatabase extends ChangeNotifier {
   static late AppDatabase db;
+
+  VoidCallback? onDayCompleted;
+  void Function(int streak)? onStreakMilestone;
 
   // ----------------------- SETUP -----------------------
 
@@ -76,9 +80,11 @@ class HabitDatabase extends ChangeNotifier {
     final rows = await db.select(db.categories).get();
     customCategories
       ..clear()
-      ..addAll(rows.map((r) => HabitCategory(
+      ..addAll(rows.map((r) => HabitCategory.fromStored(
             id: r.key,
             label: r.label,
+            // Custom category icons are persisted runtime values.
+            // ignore: non_const_argument_for_const_parameter
             icon: IconData(r.iconCodepoint, fontFamily: 'MaterialIcons'),
             color: Color(r.colorValue),
           )));
@@ -309,6 +315,13 @@ class HabitDatabase extends ChangeNotifier {
   Future<void> _setTodayProgress(int id, int newCount) async {
     final today = DateTime.now();
     final normalizedToday = DateTime(today.year, today.month, today.day);
+    final habitBefore =
+        currentHabits.where((habit) => habit.id == id).firstOrNull;
+    final previousProgress = progressFor(id);
+    final previousStreak = habitBefore == null
+        ? 0
+        : currentStreak(completedDaysFor(id),
+            parseFrequencyDays(habitBefore.frequencyDays));
 
     final existing = await (db.select(db.habitCompletions)
           ..where((c) => c.habitId.equals(id) & c.date.equals(normalizedToday)))
@@ -330,6 +343,36 @@ class HabitDatabase extends ChangeNotifier {
 
     // re-read from the database
     await readHabits();
+
+    final habitAfter =
+        currentHabits.where((habit) => habit.id == id).firstOrNull;
+    if (habitAfter == null) return;
+    final currentProgress = progressFor(id);
+    final completedNow = currentProgress >= habitAfter.targetCount;
+    final completedBefore = previousProgress >= habitAfter.targetCount;
+
+    if (!completedBefore && completedNow) {
+      final todayWeekday = normalizedToday.weekday;
+      final dueHabits = currentHabits.where((habit) =>
+          _parseFrequencyDays(habit.frequencyDays).contains(todayWeekday));
+      if (dueHabits.isNotEmpty &&
+          dueHabits
+              .every((habit) => progressFor(habit.id) >= habit.targetCount)) {
+        onDayCompleted?.call();
+      }
+    }
+
+    final newStreak = currentStreak(
+      completedDaysFor(id),
+      _parseFrequencyDays(habitAfter.frequencyDays),
+    );
+    const milestones = [7, 30, 100, 365];
+    for (final milestone in milestones) {
+      if (previousStreak < milestone && newStreak >= milestone) {
+        onStreakMilestone?.call(milestone);
+        break;
+      }
+    }
   }
 
   // UPDATE - edit a habit's name, category, frequency and target

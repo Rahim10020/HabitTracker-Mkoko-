@@ -12,6 +12,13 @@ class HabitCategory {
     required this.icon,
     required this.color,
   });
+
+  HabitCategory.fromStored({
+    required this.id,
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
 }
 
 // Fixed set of categories for now — kept small and curated rather than

@@ -61,9 +61,14 @@ class _StatsPageState extends State<StatsPage> {
                           children: [
                             Text('Cette semaine', style: textTheme.bodyMedium),
                             const SizedBox(height: AppSpacing.xs),
-                            Text(
-                              '${(weekRate * 100).round()}%',
-                              style: textTheme.displayLarge,
+                            TweenAnimationBuilder<double>(
+                              tween: Tween(begin: 0, end: weekRate * 100),
+                              duration: const Duration(milliseconds: 800),
+                              curve: Curves.easeOutCubic,
+                              builder: (context, value, _) => Text(
+                                '${value.round()}%',
+                                style: textTheme.displayLarge,
+                              ),
                             ),
                             Text('de complétion', style: textTheme.bodyMedium),
                           ],
@@ -72,12 +77,18 @@ class _StatsPageState extends State<StatsPage> {
                       SizedBox(
                         width: 64,
                         height: 64,
-                        child: CircularProgressIndicator(
-                          value: weekRate,
-                          strokeWidth: 6,
-                          backgroundColor: colorScheme.outline,
-                          valueColor:
-                              AlwaysStoppedAnimation(colorScheme.primary),
+                        child: TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 0, end: weekRate),
+                          duration: const Duration(milliseconds: 800),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, value, _) =>
+                              CircularProgressIndicator(
+                            value: value,
+                            strokeWidth: 6,
+                            backgroundColor: colorScheme.outline,
+                            valueColor:
+                                AlwaysStoppedAnimation(colorScheme.primary),
+                          ),
                         ),
                       ),
                     ],

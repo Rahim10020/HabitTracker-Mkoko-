@@ -197,22 +197,33 @@ class _HabitFormSheetState extends State<_HabitFormSheet> {
                     children: [
                       ...habitDatabase.allCategories.map((c) {
                         final selected = category == c.id;
-                        return ChoiceChip(
-                          label: Text(c.label),
-                          avatar: Icon(c.icon,
-                              size: 16,
-                              color: selected ? Colors.white : c.color),
-                          selected: selected,
-                          onSelected: (_) => setState(() => category = c.id),
-                          selectedColor: c.color,
-                          backgroundColor: colorScheme.secondary,
-                          labelStyle: TextStyle(
-                            color:
-                                selected ? Colors.white : colorScheme.onSurface,
+                        return TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 1, end: selected ? 1.08 : 1),
+                          duration: const Duration(milliseconds: 180),
+                          curve: Curves.easeOutBack,
+                          builder: (context, scale, child) => Transform.scale(
+                            scale: scale,
+                            child: child,
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.full),
-                            side: BorderSide.none,
+                          child: ChoiceChip(
+                            label: Text(c.label),
+                            avatar: Icon(c.icon,
+                                size: 16,
+                                color: selected ? Colors.white : c.color),
+                            selected: selected,
+                            onSelected: (_) => setState(() => category = c.id),
+                            selectedColor: c.color,
+                            backgroundColor: colorScheme.secondary,
+                            labelStyle: TextStyle(
+                              color: selected
+                                  ? Colors.white
+                                  : colorScheme.onSurface,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(AppRadius.full),
+                              side: BorderSide.none,
+                            ),
                           ),
                         );
                       }),
@@ -289,16 +300,22 @@ class _HabitFormSheetState extends State<_HabitFormSheet> {
                             ? selectedDays.remove(weekday)
                             : selectedDays.add(weekday);
                       }),
-                      child: CircleAvatar(
-                        radius: 18,
-                        backgroundColor: selected
-                            ? colorScheme.primary
-                            : colorScheme.secondary,
-                        child: Text(
-                          _weekdayLabels[i],
-                          style: TextStyle(
-                            color:
-                                selected ? Colors.white : colorScheme.onSurface,
+                      child: AnimatedScale(
+                        scale: selected ? 1.08 : 1,
+                        duration: const Duration(milliseconds: 180),
+                        curve: Curves.easeOutBack,
+                        child: CircleAvatar(
+                          radius: 18,
+                          backgroundColor: selected
+                              ? colorScheme.primary
+                              : colorScheme.secondary,
+                          child: Text(
+                            _weekdayLabels[i],
+                            style: TextStyle(
+                              color: selected
+                                  ? Colors.white
+                                  : colorScheme.onSurface,
+                            ),
                           ),
                         ),
                       ),

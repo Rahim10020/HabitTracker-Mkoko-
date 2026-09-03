@@ -2,9 +2,10 @@ import 'package:R_HabitTracker/theme/app_colors.dart';
 import 'package:R_HabitTracker/theme/app_spacing.dart';
 import 'package:R_HabitTracker/utils/habit_category.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
-class MyHabitTile extends StatelessWidget {
+class MyHabitTile extends StatefulWidget {
   final bool isCompleted;
   final String text;
   final HabitCategory category;
@@ -57,7 +58,34 @@ class MyHabitTile extends StatelessWidget {
     this.dragHandle,
   });
 
-  bool get _isQuantifiable => targetCount > 1;
+  @override
+  State<MyHabitTile> createState() => _MyHabitTileState();
+}
+
+class _MyHabitTileState extends State<MyHabitTile>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 420),
+  );
+
+  bool get _isQuantifiable => widget.targetCount > 1;
+
+  @override
+  void didUpdateWidget(covariant MyHabitTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final wasComplete = oldWidget.currentValue >= oldWidget.targetCount;
+    final isComplete = widget.currentValue >= widget.targetCount;
+    if (widget.targetCount > 1 && !wasComplete && isComplete) {
+      _controller.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,14 +98,15 @@ class MyHabitTile extends StatelessWidget {
         color: colorScheme.secondary, // card surface (see theme notes)
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
-          color: colorScheme.outline.withValues(alpha: isCompleted ? 0 : 1),
+          color:
+              colorScheme.outline.withValues(alpha: widget.isCompleted ? 0 : 1),
         ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          if (dragHandle != null) ...[
-            dragHandle!,
+          if (widget.dragHandle != null) ...[
+            widget.dragHandle!,
             const SizedBox(width: AppSpacing.xs),
           ],
           // category icon
@@ -85,10 +114,11 @@ class MyHabitTile extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: category.color.withValues(alpha: 0.15),
+              color: widget.category.color.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(category.icon, color: category.color, size: 20),
+            child: Icon(widget.category.icon,
+                color: widget.category.color, size: 20),
           ),
           const SizedBox(width: AppSpacing.md),
           // name + meta (+ progress bar for quantifiable habits)
@@ -97,10 +127,11 @@ class MyHabitTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  text,
+                  widget.text,
                   style: textTheme.bodyLarge?.copyWith(
-                    decoration: isCompleted ? TextDecoration.lineThrough : null,
-                    color: isCompleted
+                    decoration:
+                        widget.isCompleted ? TextDecoration.lineThrough : null,
+                    color: widget.isCompleted
                         ? colorScheme.onSurfaceVariant
                         : colorScheme.onSurface,
                   ),
@@ -108,29 +139,30 @@ class MyHabitTile extends StatelessWidget {
                 const SizedBox(height: 2),
                 Row(
                   children: [
-                    if (streak > 0) ...[
+                    if (widget.streak > 0) ...[
                       const Icon(Icons.local_fire_department_rounded,
                           size: 14, color: Color(0xFFF97316)),
                       const SizedBox(width: 2),
-                      Text('$streak', style: textTheme.labelSmall),
+                      Text('${widget.streak}', style: textTheme.labelSmall),
                       const SizedBox(width: AppSpacing.sm),
                     ],
                     GestureDetector(
-                      onTap: onReminderTap,
+                      onTap: widget.onReminderTap,
                       child: Row(
                         children: [
                           Icon(
-                            reminderTime != null
+                            widget.reminderTime != null
                                 ? Icons.notifications_active_rounded
                                 : Icons.notifications_none_rounded,
                             size: 14,
-                            color: reminderTime != null
+                            color: widget.reminderTime != null
                                 ? colorScheme.primary
                                 : colorScheme.onSurfaceVariant,
                           ),
-                          if (reminderTime != null) ...[
+                          if (widget.reminderTime != null) ...[
                             const SizedBox(width: 2),
-                            Text(reminderTime!, style: textTheme.labelSmall),
+                            Text(widget.reminderTime!,
+                                style: textTheme.labelSmall),
                           ],
                         ],
                       ),
@@ -141,15 +173,24 @@ class MyHabitTile extends StatelessWidget {
                   const SizedBox(height: AppSpacing.xs),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(AppRadius.sm),
-                    child: LinearProgressIndicator(
-                      value: (currentValue / targetCount).clamp(0.0, 1.0),
-                      minHeight: 5,
-                      backgroundColor:
-                          colorScheme.outline.withValues(alpha: 0.3),
-                      valueColor: AlwaysStoppedAnimation(
-                        isCompleted
-                            ? AppColors.lightSuccess
-                            : colorScheme.primary,
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(
+                        begin: 0,
+                        end: (widget.currentValue / widget.targetCount)
+                            .clamp(0.0, 1.0),
+                      ),
+                      duration: const Duration(milliseconds: 350),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, value, _) => LinearProgressIndicator(
+                        value: value,
+                        minHeight: 5,
+                        backgroundColor:
+                            colorScheme.outline.withValues(alpha: 0.3),
+                        valueColor: AlwaysStoppedAnimation(
+                          widget.isCompleted
+                              ? AppColors.lightSuccess
+                              : colorScheme.primary,
+                        ),
                       ),
                     ),
                   ),
@@ -161,16 +202,16 @@ class MyHabitTile extends StatelessWidget {
           // trailing control: check toggle (simple) or +/- stepper (quantifiable)
           _isQuantifiable
               ? _ProgressStepper(
-                  currentValue: currentValue,
-                  targetCount: targetCount,
-                  unit: unit,
-                  isCompleted: isCompleted,
-                  onIncrement: onIncrement,
-                  onDecrement: onDecrement,
+                  currentValue: widget.currentValue,
+                  targetCount: widget.targetCount,
+                  unit: widget.unit,
+                  isCompleted: widget.isCompleted,
+                  onIncrement: widget.onIncrement,
+                  onDecrement: widget.onDecrement,
                 )
               : _CompletionCheck(
-                  isCompleted: isCompleted,
-                  onTap: () => onChanged?.call(!isCompleted),
+                  isCompleted: widget.isCompleted,
+                  onTap: () => widget.onChanged?.call(!widget.isCompleted),
                 ),
         ],
       ),
@@ -187,7 +228,7 @@ class MyHabitTile extends StatelessWidget {
           extentRatio: 0.4,
           children: [
             SlidableAction(
-              onPressed: onEditPressed,
+              onPressed: widget.onEditPressed,
               backgroundColor: colorScheme.tertiary,
               foregroundColor: Colors.white,
               icon: Icons.edit_rounded,
@@ -197,7 +238,7 @@ class MyHabitTile extends StatelessWidget {
               ),
             ),
             SlidableAction(
-              onPressed: onDeletePressed,
+              onPressed: widget.onDeletePressed,
               backgroundColor: AppColors.lightError,
               foregroundColor: Colors.white,
               icon: Icons.delete_rounded,
@@ -213,7 +254,7 @@ class MyHabitTile extends StatelessWidget {
         child: _isQuantifiable
             ? tileBody
             : GestureDetector(
-                onTap: () => onChanged?.call(!isCompleted),
+                onTap: () => widget.onChanged?.call(!widget.isCompleted),
                 child: tileBody,
               ),
       ),
@@ -221,37 +262,108 @@ class MyHabitTile extends StatelessWidget {
   }
 }
 
-class _CompletionCheck extends StatelessWidget {
+class _CompletionCheck extends StatefulWidget {
   final bool isCompleted;
   final VoidCallback onTap;
 
   const _CompletionCheck({required this.isCompleted, required this.onTap});
 
   @override
+  @override
+  State<_CompletionCheck> createState() => _CompletionCheckState();
+}
+
+class _CompletionCheckState extends State<_CompletionCheck>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 320),
+  );
+
+  @override
+  void didUpdateWidget(covariant _CompletionCheck oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isCompleted != widget.isCompleted) {
+      _controller.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        width: 28,
-        height: 28,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: isCompleted ? AppColors.lightSuccess : Colors.transparent,
-          border: Border.all(
-            color: isCompleted
+      onTap: () {
+        if (!widget.isCompleted) HapticFeedback.lightImpact();
+        widget.onTap();
+      },
+      child: ScaleTransition(
+        scale: TweenSequence<double>([
+          TweenSequenceItem(tween: Tween(begin: 1, end: 1.25), weight: 35),
+          TweenSequenceItem(tween: Tween(begin: 1.25, end: 1), weight: 65),
+        ]).animate(CurvedAnimation(
+          parent: _controller,
+          curve: Curves.elasticOut,
+        )),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: widget.isCompleted
                 ? AppColors.lightSuccess
-                : colorScheme.onSurfaceVariant,
-            width: 1.5,
+                : Colors.transparent,
+            border: Border.all(
+              color: widget.isCompleted
+                  ? AppColors.lightSuccess
+                  : colorScheme.onSurfaceVariant,
+              width: 1.5,
+            ),
           ),
+          child: widget.isCompleted
+              ? AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, _) => CustomPaint(
+                    size: const Size(18, 18),
+                    painter: _CheckPainter(progress: _controller.value),
+                  ),
+                )
+              : null,
         ),
-        child: isCompleted
-            ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
-            : null,
       ),
     );
   }
+}
+
+class _CheckPainter extends CustomPainter {
+  final double progress;
+
+  const _CheckPainter({required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.2
+      ..strokeCap = StrokeCap.round;
+    final path = Path()
+      ..moveTo(size.width * 0.18, size.height * 0.52)
+      ..lineTo(size.width * 0.43, size.height * 0.76)
+      ..lineTo(size.width * 0.84, size.height * 0.28);
+    final metric = path.computeMetrics().first;
+    canvas.drawPath(metric.extractPath(0, metric.length * progress), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _CheckPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }
 
 // +/- stepper for quantifiable habits (e.g. "8 glasses of water"). Shows
@@ -319,33 +431,47 @@ class _ProgressStepper extends StatelessWidget {
   }
 }
 
-class _StepperButton extends StatelessWidget {
+class _StepperButton extends StatefulWidget {
   final IconData icon;
   final VoidCallback? onTap;
 
   const _StepperButton({required this.icon, required this.onTap});
 
   @override
+  State<_StepperButton> createState() => _StepperButtonState();
+}
+
+class _StepperButtonState extends State<_StepperButton> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final enabled = onTap != null;
+    final enabled = widget.onTap != null;
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 26,
-        height: 26,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: enabled
-              ? colorScheme.primary.withValues(alpha: 0.12)
-              : colorScheme.outline.withValues(alpha: 0.08),
-        ),
-        child: Icon(
-          icon,
-          size: 16,
-          color: enabled
-              ? colorScheme.primary
-              : colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+      onTap: widget.onTap,
+      onTapDown: enabled ? (_) => setState(() => _pressed = true) : null,
+      onTapUp: enabled ? (_) => setState(() => _pressed = false) : null,
+      onTapCancel: enabled ? () => setState(() => _pressed = false) : null,
+      child: AnimatedScale(
+        scale: _pressed ? 0.88 : 1,
+        duration: const Duration(milliseconds: 100),
+        child: Container(
+          width: 26,
+          height: 26,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: enabled
+                ? colorScheme.primary.withValues(alpha: 0.12)
+                : colorScheme.outline.withValues(alpha: 0.08),
+          ),
+          child: Icon(
+            widget.icon,
+            size: 16,
+            color: enabled
+                ? colorScheme.primary
+                : colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+          ),
         ),
       ),
     );

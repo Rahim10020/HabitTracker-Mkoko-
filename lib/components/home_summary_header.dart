@@ -36,11 +36,16 @@ class HomeSummaryHeader extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.full),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-              backgroundColor: colorScheme.secondary,
-              valueColor: AlwaysStoppedAnimation(colorScheme.primary),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: progress),
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, _) => LinearProgressIndicator(
+                value: value,
+                minHeight: 8,
+                backgroundColor: colorScheme.secondary,
+                valueColor: AlwaysStoppedAnimation(colorScheme.primary),
+              ),
             ),
           ),
         ],

@@ -1,9 +1,12 @@
+import 'package:R_HabitTracker/components/celebration_overlay.dart';
+import 'package:R_HabitTracker/database/habit_database.dart';
 import 'package:R_HabitTracker/pages/home_page.dart';
 import 'package:R_HabitTracker/pages/settings_page.dart';
 import 'package:R_HabitTracker/pages/stats_page.dart';
 import 'package:R_HabitTracker/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:provider/provider.dart';
 
 /// Root navigation shell — replaces the old side [Drawer] with a bottom
 /// nav bar (Home / Stats / Réglages) built on google_nav_bar.
@@ -16,6 +19,7 @@ class RootShell extends StatefulWidget {
 
 class _RootShellState extends State<RootShell> {
   int _index = 0;
+  final _celebrationKey = GlobalKey<CelebrationOverlayState>();
 
   static const _pages = [
     HomePage(),
@@ -24,12 +28,46 @@ class _RootShellState extends State<RootShell> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    final database = context.read<HabitDatabase>();
+    database.onDayCompleted =
+        () => _celebrationKey.currentState?.show(const DayCompleted());
+    database.onStreakMilestone =
+        (days) => _celebrationKey.currentState?.show(StreakMilestone(days));
+  }
+
+  @override
+  void dispose() {
+    final database = context.read<HabitDatabase>();
+    database.onDayCompleted = null;
+    database.onStreakMilestone = null;
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      body: IndexedStack(index: _index, children: _pages),
+      body: Stack(
+        children: [
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            switchInCurve: Curves.easeOutCubic,
+            transitionBuilder: (child, animation) => SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0.025, 0),
+                end: Offset.zero,
+              ).animate(animation),
+              child: FadeTransition(opacity: animation, child: child),
+            ),
+            child: KeyedSubtree(key: ValueKey(_index), child: _pages[_index]),
+          ),
+          CelebrationOverlay(key: _celebrationKey),
+        ],
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: colorScheme.secondary, // card-role surface, see theme notes

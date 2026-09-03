@@ -179,29 +179,72 @@ class _HomePageState extends State<HomePage> {
         final scheduledDays = parseFrequencyDays(habit.frequencyDays);
         bool isCompletedToday = isHabitCompletedToday(completedDays);
 
-        return MyHabitTile(
+        return _AnimatedListItem(
           key: ValueKey(habit.id),
-          isCompleted: isCompletedToday,
-          text: habit.name,
-          category: habitDatabase.categoryById(habit.category),
-          targetCount: habit.targetCount,
-          unit: habit.unit,
-          streak: currentStreak(completedDays, scheduledDays),
-          currentValue: habitDatabase.progressFor(habit.id),
-          reminderTime: habit.reminderTime,
-          onReminderTap: () => openReminderSheet(habit),
-          onChanged: (value) => checkHabitOnAndOff(value, habit),
-          onIncrement: () => incrementHabit(habit),
-          onDecrement: () => decrementHabit(habit),
-          onEditPressed: (context) => editHabitBox(habit),
-          onDeletePressed: (context) => deleteHabitBox(habit),
-          dragHandle: ReorderableDragStartListener(
-            index: index,
-            child: Icon(Icons.drag_indicator_rounded,
-                color: colorScheme.onSurfaceVariant),
+          child: MyHabitTile(
+            isCompleted: isCompletedToday,
+            text: habit.name,
+            category: habitDatabase.categoryById(habit.category),
+            targetCount: habit.targetCount,
+            unit: habit.unit,
+            streak: currentStreak(completedDays, scheduledDays),
+            currentValue: habitDatabase.progressFor(habit.id),
+            reminderTime: habit.reminderTime,
+            onReminderTap: () => openReminderSheet(habit),
+            onChanged: (value) => checkHabitOnAndOff(value, habit),
+            onIncrement: () => incrementHabit(habit),
+            onDecrement: () => decrementHabit(habit),
+            onEditPressed: (context) => editHabitBox(habit),
+            onDeletePressed: (context) => deleteHabitBox(habit),
+            dragHandle: ReorderableDragStartListener(
+              index: index,
+              child: Icon(Icons.drag_indicator_rounded,
+                  color: colorScheme.onSurfaceVariant),
+            ),
           ),
         );
       },
+    );
+  }
+}
+
+class _AnimatedListItem extends StatefulWidget {
+  final Widget child;
+
+  const _AnimatedListItem({super.key, required this.child});
+
+  @override
+  State<_AnimatedListItem> createState() => _AnimatedListItemState();
+}
+
+class _AnimatedListItemState extends State<_AnimatedListItem>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 300),
+  )..forward();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    );
+    return FadeTransition(
+      opacity: animation,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.08),
+          end: Offset.zero,
+        ).animate(animation),
+        child: widget.child,
+      ),
     );
   }
 }
