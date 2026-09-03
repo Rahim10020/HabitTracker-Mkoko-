@@ -7,3 +7,6 @@ du téléphone sans un BroadcastReceiver dédié au boot — à ajouter dans un 
 ⚠️ Limites assumées, vu le scope qu'on a validé :
 Le fond blanc du widget n'est pas adapté au thème sombre du launcher — à améliorer plus tard 
 si besoin.
+
+-- prochainement, peaufiner et voir si je peux trouver de meilleurs couleurs
+-- ensuite faire le excalidraw et tout est bon (je pourrais alors marquer ca comme polished dans notion)
