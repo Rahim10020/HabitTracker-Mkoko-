@@ -98,8 +98,7 @@ class NotificationService {
           android: AndroidNotificationDetails(
             'habit_reminders',
             'Rappels d\'habitudes',
-            channelDescription:
-                'Notifications de rappel pour vos habitudes',
+            channelDescription: 'Notifications de rappel pour vos habitudes',
             importance: Importance.defaultImportance,
             priority: Priority.defaultPriority,
           ),
@@ -109,6 +108,8 @@ class NotificationService {
         // Android 12+; a habit reminder doesn't need to-the-second
         // precision.
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
       );
     }
@@ -120,8 +121,7 @@ class NotificationService {
     }
   }
 
-  int _notificationId(int habitId, int isoWeekday) =>
-      habitId * 10 + isoWeekday;
+  int _notificationId(int habitId, int isoWeekday) => habitId * 10 + isoWeekday;
 
   tz.TZDateTime _nextInstanceOfWeekdayTime(
       int isoWeekday, int hour, int minute) {
