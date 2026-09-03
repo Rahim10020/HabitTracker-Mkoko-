@@ -1,5 +1,6 @@
 import 'package:R_HabitTracker/database/app_database.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
+import 'package:R_HabitTracker/pages/habit_detail_page.dart';
 import 'package:R_HabitTracker/theme/app_spacing.dart';
 import 'package:R_HabitTracker/utils/streak_util.dart';
 import 'package:flutter/material.dart';
@@ -93,37 +94,50 @@ class _StatsPageState extends State<StatsPage> {
                   final current = currentStreak(completedDays, scheduledDays);
                   final best = bestStreak(completedDays, scheduledDays);
 
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    decoration: BoxDecoration(
-                      color: colorScheme.secondary,
-                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                  return GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => HabitDetailPage(habitId: habit.id),
+                      ),
                     ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: category.color.withOpacity(0.15),
-                            shape: BoxShape.circle,
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: colorScheme.secondary,
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: category.color.withOpacity(0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(category.icon,
+                                color: category.color, size: 18),
                           ),
-                          child: Icon(category.icon,
-                              color: category.color, size: 18),
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Text(habit.name, style: textTheme.bodyLarge),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text('🔥 $current', style: textTheme.bodyMedium),
-                            Text('Record : $best', style: textTheme.labelSmall),
-                          ],
-                        ),
-                      ],
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child:
+                                Text(habit.name, style: textTheme.bodyLarge),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text('🔥 $current', style: textTheme.bodyMedium),
+                              Text('Record : $best',
+                                  style: textTheme.labelSmall),
+                            ],
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Icon(Icons.chevron_right_rounded,
+                              color: colorScheme.onSurfaceVariant, size: 20),
+                        ],
+                      ),
                     ),
                   );
                 }),

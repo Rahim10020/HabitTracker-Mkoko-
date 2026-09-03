@@ -10,6 +10,17 @@ bool isHabitCompletedToday(List<DateTime> completedDays) {
   );
 }
 
+// we gonna prepare a heat map dataset for a single habit's completed
+// dates — binary (1 = done that day), since there's only one habit to
+// count here, unlike the aggregate dashboard heatmap.
+Map<DateTime, int> prepareHabitHeatMapDataset(List<DateTime> completedDays) {
+  final Map<DateTime, int> datasets = {};
+  for (final date in completedDays) {
+    datasets[DateTime(date.year, date.month, date.day)] = 1;
+  }
+  return datasets;
+}
+
 // we gonna prepare heat map datasets from every habit's completed dates
 Map<DateTime, int> prepareHeatMapDataset(
   Map<int, List<DateTime>> completedDaysByHabit,
