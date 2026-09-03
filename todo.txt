@@ -1,0 +1,4 @@
+⚠️ Limite connue que je n'ai pas traitée (hors scope pour rester raisonnable) 
+: les rappels programmés via AlarmManager sur Android ne survivent pas à un redémarrage 
+du téléphone sans un BroadcastReceiver dédié au boot — à ajouter dans un futur patch si 
+ça te gêne en usage réel.

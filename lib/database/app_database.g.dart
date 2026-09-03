@@ -59,9 +59,23 @@ class $HabitsTable extends Habits with TableInfo<$HabitsTable, Habit> {
   late final GeneratedColumn<String> unit = GeneratedColumn<String>(
       'unit', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _reminderTimeMeta =
+      const VerificationMeta('reminderTime');
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, name, category, frequencyType, frequencyDays, targetCount, unit];
+  late final GeneratedColumn<String> reminderTime = GeneratedColumn<String>(
+      'reminder_time', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        name,
+        category,
+        frequencyType,
+        frequencyDays,
+        targetCount,
+        unit,
+        reminderTime
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -107,6 +121,12 @@ class $HabitsTable extends Habits with TableInfo<$HabitsTable, Habit> {
       context.handle(
           _unitMeta, unit.isAcceptableOrUnknown(data['unit']!, _unitMeta));
     }
+    if (data.containsKey('reminder_time')) {
+      context.handle(
+          _reminderTimeMeta,
+          reminderTime.isAcceptableOrUnknown(
+              data['reminder_time']!, _reminderTimeMeta));
+    }
     return context;
   }
 
@@ -130,6 +150,8 @@ class $HabitsTable extends Habits with TableInfo<$HabitsTable, Habit> {
           .read(DriftSqlType.int, data['${effectivePrefix}target_count'])!,
       unit: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}unit']),
+      reminderTime: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}reminder_time']),
     );
   }
 
@@ -147,6 +169,7 @@ class Habit extends DataClass implements Insertable<Habit> {
   final String frequencyDays;
   final int targetCount;
   final String? unit;
+  final String? reminderTime;
   const Habit(
       {required this.id,
       required this.name,
@@ -154,7 +177,8 @@ class Habit extends DataClass implements Insertable<Habit> {
       required this.frequencyType,
       required this.frequencyDays,
       required this.targetCount,
-      this.unit});
+      this.unit,
+      this.reminderTime});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -166,6 +190,9 @@ class Habit extends DataClass implements Insertable<Habit> {
     map['target_count'] = Variable<int>(targetCount);
     if (!nullToAbsent || unit != null) {
       map['unit'] = Variable<String>(unit);
+    }
+    if (!nullToAbsent || reminderTime != null) {
+      map['reminder_time'] = Variable<String>(reminderTime);
     }
     return map;
   }
@@ -179,6 +206,9 @@ class Habit extends DataClass implements Insertable<Habit> {
       frequencyDays: Value(frequencyDays),
       targetCount: Value(targetCount),
       unit: unit == null && nullToAbsent ? const Value.absent() : Value(unit),
+      reminderTime: reminderTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reminderTime),
     );
   }
 
@@ -193,6 +223,7 @@ class Habit extends DataClass implements Insertable<Habit> {
       frequencyDays: serializer.fromJson<String>(json['frequencyDays']),
       targetCount: serializer.fromJson<int>(json['targetCount']),
       unit: serializer.fromJson<String?>(json['unit']),
+      reminderTime: serializer.fromJson<String?>(json['reminderTime']),
     );
   }
   @override
@@ -206,6 +237,7 @@ class Habit extends DataClass implements Insertable<Habit> {
       'frequencyDays': serializer.toJson<String>(frequencyDays),
       'targetCount': serializer.toJson<int>(targetCount),
       'unit': serializer.toJson<String?>(unit),
+      'reminderTime': serializer.toJson<String?>(reminderTime),
     };
   }
 
@@ -216,7 +248,8 @@ class Habit extends DataClass implements Insertable<Habit> {
           String? frequencyType,
           String? frequencyDays,
           int? targetCount,
-          Value<String?> unit = const Value.absent()}) =>
+          Value<String?> unit = const Value.absent(),
+          Value<String?> reminderTime = const Value.absent()}) =>
       Habit(
         id: id ?? this.id,
         name: name ?? this.name,
@@ -225,6 +258,8 @@ class Habit extends DataClass implements Insertable<Habit> {
         frequencyDays: frequencyDays ?? this.frequencyDays,
         targetCount: targetCount ?? this.targetCount,
         unit: unit.present ? unit.value : this.unit,
+        reminderTime:
+            reminderTime.present ? reminderTime.value : this.reminderTime,
       );
   Habit copyWithCompanion(HabitsCompanion data) {
     return Habit(
@@ -240,6 +275,9 @@ class Habit extends DataClass implements Insertable<Habit> {
       targetCount:
           data.targetCount.present ? data.targetCount.value : this.targetCount,
       unit: data.unit.present ? data.unit.value : this.unit,
+      reminderTime: data.reminderTime.present
+          ? data.reminderTime.value
+          : this.reminderTime,
     );
   }
 
@@ -252,14 +290,15 @@ class Habit extends DataClass implements Insertable<Habit> {
           ..write('frequencyType: $frequencyType, ')
           ..write('frequencyDays: $frequencyDays, ')
           ..write('targetCount: $targetCount, ')
-          ..write('unit: $unit')
+          ..write('unit: $unit, ')
+          ..write('reminderTime: $reminderTime')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, name, category, frequencyType, frequencyDays, targetCount, unit);
+  int get hashCode => Object.hash(id, name, category, frequencyType,
+      frequencyDays, targetCount, unit, reminderTime);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -270,7 +309,8 @@ class Habit extends DataClass implements Insertable<Habit> {
           other.frequencyType == this.frequencyType &&
           other.frequencyDays == this.frequencyDays &&
           other.targetCount == this.targetCount &&
-          other.unit == this.unit);
+          other.unit == this.unit &&
+          other.reminderTime == this.reminderTime);
 }
 
 class HabitsCompanion extends UpdateCompanion<Habit> {
@@ -281,6 +321,7 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
   final Value<String> frequencyDays;
   final Value<int> targetCount;
   final Value<String?> unit;
+  final Value<String?> reminderTime;
   const HabitsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -289,6 +330,7 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
     this.frequencyDays = const Value.absent(),
     this.targetCount = const Value.absent(),
     this.unit = const Value.absent(),
+    this.reminderTime = const Value.absent(),
   });
   HabitsCompanion.insert({
     this.id = const Value.absent(),
@@ -298,6 +340,7 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
     this.frequencyDays = const Value.absent(),
     this.targetCount = const Value.absent(),
     this.unit = const Value.absent(),
+    this.reminderTime = const Value.absent(),
   }) : name = Value(name);
   static Insertable<Habit> custom({
     Expression<int>? id,
@@ -307,6 +350,7 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
     Expression<String>? frequencyDays,
     Expression<int>? targetCount,
     Expression<String>? unit,
+    Expression<String>? reminderTime,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -316,6 +360,7 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
       if (frequencyDays != null) 'frequency_days': frequencyDays,
       if (targetCount != null) 'target_count': targetCount,
       if (unit != null) 'unit': unit,
+      if (reminderTime != null) 'reminder_time': reminderTime,
     });
   }
 
@@ -326,7 +371,8 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
       Value<String>? frequencyType,
       Value<String>? frequencyDays,
       Value<int>? targetCount,
-      Value<String?>? unit}) {
+      Value<String?>? unit,
+      Value<String?>? reminderTime}) {
     return HabitsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -335,6 +381,7 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
       frequencyDays: frequencyDays ?? this.frequencyDays,
       targetCount: targetCount ?? this.targetCount,
       unit: unit ?? this.unit,
+      reminderTime: reminderTime ?? this.reminderTime,
     );
   }
 
@@ -362,6 +409,9 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
     if (unit.present) {
       map['unit'] = Variable<String>(unit.value);
     }
+    if (reminderTime.present) {
+      map['reminder_time'] = Variable<String>(reminderTime.value);
+    }
     return map;
   }
 
@@ -374,7 +424,8 @@ class HabitsCompanion extends UpdateCompanion<Habit> {
           ..write('frequencyType: $frequencyType, ')
           ..write('frequencyDays: $frequencyDays, ')
           ..write('targetCount: $targetCount, ')
-          ..write('unit: $unit')
+          ..write('unit: $unit, ')
+          ..write('reminderTime: $reminderTime')
           ..write(')'))
         .toString();
   }
@@ -1175,6 +1226,7 @@ typedef $$HabitsTableCreateCompanionBuilder = HabitsCompanion Function({
   Value<String> frequencyDays,
   Value<int> targetCount,
   Value<String?> unit,
+  Value<String?> reminderTime,
 });
 typedef $$HabitsTableUpdateCompanionBuilder = HabitsCompanion Function({
   Value<int> id,
@@ -1184,6 +1236,7 @@ typedef $$HabitsTableUpdateCompanionBuilder = HabitsCompanion Function({
   Value<String> frequencyDays,
   Value<int> targetCount,
   Value<String?> unit,
+  Value<String?> reminderTime,
 });
 
 final class $$HabitsTableReferences
@@ -1238,6 +1291,9 @@ class $$HabitsTableFilterComposer
   ColumnFilters<String> get unit => $composableBuilder(
       column: $table.unit, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<String> get reminderTime => $composableBuilder(
+      column: $table.reminderTime, builder: (column) => ColumnFilters(column));
+
   Expression<bool> habitCompletionsRefs(
       Expression<bool> Function($$HabitCompletionsTableFilterComposer f) f) {
     final $$HabitCompletionsTableFilterComposer composer = $composerBuilder(
@@ -1291,6 +1347,10 @@ class $$HabitsTableOrderingComposer
 
   ColumnOrderings<String> get unit => $composableBuilder(
       column: $table.unit, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get reminderTime => $composableBuilder(
+      column: $table.reminderTime,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$HabitsTableAnnotationComposer
@@ -1322,6 +1382,9 @@ class $$HabitsTableAnnotationComposer
 
   GeneratedColumn<String> get unit =>
       $composableBuilder(column: $table.unit, builder: (column) => column);
+
+  GeneratedColumn<String> get reminderTime => $composableBuilder(
+      column: $table.reminderTime, builder: (column) => column);
 
   Expression<T> habitCompletionsRefs<T extends Object>(
       Expression<T> Function($$HabitCompletionsTableAnnotationComposer a) f) {
@@ -1375,6 +1438,7 @@ class $$HabitsTableTableManager extends RootTableManager<
             Value<String> frequencyDays = const Value.absent(),
             Value<int> targetCount = const Value.absent(),
             Value<String?> unit = const Value.absent(),
+            Value<String?> reminderTime = const Value.absent(),
           }) =>
               HabitsCompanion(
             id: id,
@@ -1384,6 +1448,7 @@ class $$HabitsTableTableManager extends RootTableManager<
             frequencyDays: frequencyDays,
             targetCount: targetCount,
             unit: unit,
+            reminderTime: reminderTime,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -1393,6 +1458,7 @@ class $$HabitsTableTableManager extends RootTableManager<
             Value<String> frequencyDays = const Value.absent(),
             Value<int> targetCount = const Value.absent(),
             Value<String?> unit = const Value.absent(),
+            Value<String?> reminderTime = const Value.absent(),
           }) =>
               HabitsCompanion.insert(
             id: id,
@@ -1402,6 +1468,7 @@ class $$HabitsTableTableManager extends RootTableManager<
             frequencyDays: frequencyDays,
             targetCount: targetCount,
             unit: unit,
+            reminderTime: reminderTime,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) =>

@@ -4,6 +4,7 @@ import 'package:R_HabitTracker/components/habit_form_sheet.dart';
 import 'package:R_HabitTracker/components/home_summary_header.dart';
 import 'package:R_HabitTracker/components/my_habit_tile.dart';
 import 'package:R_HabitTracker/components/my_heat_map.dart';
+import 'package:R_HabitTracker/components/reminder_sheet.dart';
 import 'package:R_HabitTracker/database/app_database.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
 import 'package:R_HabitTracker/utils/habit_util.dart';
@@ -82,6 +83,22 @@ class _HomePageState extends State<HomePage> {
         await showConfirmDeleteSheet(context, habitName: habit.name);
     if (!confirmed || !mounted) return;
     context.read<HabitDatabase>().deleteHabit(habit.id);
+  }
+
+  Future<void> openReminderSheet(Habit habit) async {
+    TimeOfDay? initialTime;
+    if (habit.reminderTime != null) {
+      final parts = habit.reminderTime!.split(':');
+      initialTime =
+          TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+    }
+
+    final result =
+        await showReminderSheet(context, initialTime: initialTime);
+    if (result == null || !mounted) return;
+    context
+        .read<HabitDatabase>()
+        .setReminder(habit.id, result.enabled ? result.time : null);
   }
 
   @override
@@ -164,6 +181,8 @@ class _HomePageState extends State<HomePage> {
           unit: habit.unit,
           streak: currentStreak(completedDays, scheduledDays),
           currentValue: habitDatabase.progressFor(habit.id),
+          reminderTime: habit.reminderTime,
+          onReminderTap: () => openReminderSheet(habit),
           onChanged: (value) => checkHabitOnAndOff(value, habit),
           onIncrement: () => incrementHabit(habit),
           onDecrement: () => decrementHabit(habit),

@@ -16,6 +16,11 @@ class MyHabitTile extends StatelessWidget {
   // only used — when targetCount > 1 (quantifiable habits).
   final int currentValue;
 
+  // "HH:mm", or null if no reminder is set. Tapping the bell (always
+  // shown) opens the reminder sheet via onReminderTap.
+  final String? reminderTime;
+  final VoidCallback? onReminderTap;
+
   // simple on/off toggle — used when targetCount == 1.
   final Function(bool?)? onChanged;
 
@@ -35,6 +40,8 @@ class MyHabitTile extends StatelessWidget {
     required this.unit,
     required this.streak,
     this.currentValue = 0,
+    this.reminderTime,
+    this.onReminderTap,
     required this.onChanged,
     this.onIncrement,
     this.onDecrement,
@@ -88,15 +95,37 @@ class MyHabitTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 2),
-                if (streak > 0)
-                  Row(
-                    children: [
+                Row(
+                  children: [
+                    if (streak > 0) ...[
                       const Icon(Icons.local_fire_department_rounded,
                           size: 14, color: Color(0xFFF97316)),
                       const SizedBox(width: 2),
                       Text('$streak', style: textTheme.labelSmall),
+                      const SizedBox(width: AppSpacing.sm),
                     ],
-                  ),
+                    GestureDetector(
+                      onTap: onReminderTap,
+                      child: Row(
+                        children: [
+                          Icon(
+                            reminderTime != null
+                                ? Icons.notifications_active_rounded
+                                : Icons.notifications_none_rounded,
+                            size: 14,
+                            color: reminderTime != null
+                                ? colorScheme.primary
+                                : colorScheme.onSurfaceVariant,
+                          ),
+                          if (reminderTime != null) ...[
+                            const SizedBox(width: 2),
+                            Text(reminderTime!, style: textTheme.labelSmall),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
                 if (_isQuantifiable) ...[
                   const SizedBox(height: AppSpacing.xs),
                   ClipRRect(

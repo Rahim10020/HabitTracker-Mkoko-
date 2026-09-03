@@ -15,6 +15,9 @@ import 'package:drift/drift.dart';
 //                    of water").
 // `unit`             optional label for a quantifiable habit's count
 //                    (e.g. "glasses", "pages", "min").
+// `reminderTime`     optional "HH:mm" (24h) local time for a daily
+//                    reminder notification. Null = no reminder. Fires
+//                    only on the habit's scheduled days (frequencyDays).
 class Habits extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
@@ -25,6 +28,7 @@ class Habits extends Table {
       text().withDefault(const Constant('1,2,3,4,5,6,7'))();
   IntColumn get targetCount => integer().withDefault(const Constant(1))();
   TextColumn get unit => text().nullable()();
+  TextColumn get reminderTime => text().nullable()();
 }
 
 // -----------------------------------------------------------------------

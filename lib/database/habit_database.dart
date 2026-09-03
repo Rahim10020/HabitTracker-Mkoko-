@@ -1,4 +1,5 @@
 import 'package:R_HabitTracker/database/app_database.dart';
+import 'package:R_HabitTracker/services/notification_service.dart';
 import 'package:R_HabitTracker/utils/habit_category.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
@@ -119,6 +120,45 @@ class HabitDatabase extends ChangeNotifier {
     await readCategories();
     return key;
   }
+
+  // UPDATE - set (or clear, if [time] is null) a habit's daily reminder.
+  // Schedules one weekly-recurring notification per scheduled day of the
+  // habit (see Habits.frequencyDays), via NotificationService.
+  Future<void> setReminder(int id, TimeOfDay? time) async {
+    final habit =
+        await (db.select(db.habits)..where((h) => h.id.equals(id)))
+            .getSingleOrNull();
+    if (habit == null) return;
+
+    final formatted = time == null
+        ? null
+        : '${time.hour.toString().padLeft(2, '0')}:'
+            '${time.minute.toString().padLeft(2, '0')}';
+
+    await (db.update(db.habits)..where((h) => h.id.equals(id)))
+        .write(HabitsCompanion(reminderTime: Value(formatted)));
+
+    if (time == null) {
+      await NotificationService.instance.cancelHabitReminder(id);
+    } else {
+      await NotificationService.instance.requestPermission();
+      await NotificationService.instance.scheduleHabitReminder(
+        habitId: id,
+        habitName: habit.name,
+        scheduledDays: _parseFrequencyDays(habit.frequencyDays),
+        hour: time.hour,
+        minute: time.minute,
+      );
+    }
+
+    await readHabits();
+  }
+
+  List<int> _parseFrequencyDays(String frequencyDays) => frequencyDays
+      .split(',')
+      .where((s) => s.trim().isNotEmpty)
+      .map(int.parse)
+      .toList();
 
   // CREATE - add a new habit to the database
   //
@@ -256,12 +296,30 @@ class HabitDatabase extends ChangeNotifier {
         unit: Value(unit),
       ),
     );
+
+    // if a reminder is already set, keep it in sync with the (possibly
+    // just-changed) scheduled days and name.
+    final updated =
+        await (db.select(db.habits)..where((h) => h.id.equals(id)))
+            .getSingleOrNull();
+    if (updated?.reminderTime != null) {
+      final parts = updated!.reminderTime!.split(':');
+      await NotificationService.instance.scheduleHabitReminder(
+        habitId: id,
+        habitName: updated.name,
+        scheduledDays: _parseFrequencyDays(updated.frequencyDays),
+        hour: int.parse(parts[0]),
+        minute: int.parse(parts[1]),
+      );
+    }
+
     // re-read from the database
     await readHabits();
   }
 
   // DELETE - delete habit from the database
   Future<void> deleteHabit(int id) async {
+    await NotificationService.instance.cancelHabitReminder(id);
     await (db.delete(db.habits)..where((h) => h.id.equals(id))).go();
     // re-read from the database
     await readHabits();
