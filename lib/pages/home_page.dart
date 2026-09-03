@@ -93,8 +93,7 @@ class _HomePageState extends State<HomePage> {
           TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
     }
 
-    final result =
-        await showReminderSheet(context, initialTime: initialTime);
+    final result = await showReminderSheet(context, initialTime: initialTime);
     if (result == null || !mounted) return;
     context
         .read<HabitDatabase>()
@@ -137,8 +136,8 @@ class _HomePageState extends State<HomePage> {
   Widget _buildSummaryHeader(HabitDatabase habitDatabase) {
     final habits = habitDatabase.currentHabits;
     final completedToday = habits
-        .where((h) =>
-            isHabitCompletedToday(habitDatabase.completedDaysFor(h.id)))
+        .where(
+            (h) => isHabitCompletedToday(habitDatabase.completedDaysFor(h.id)))
         .length;
     return HomeSummaryHeader(
       completedCount: completedToday,
@@ -172,7 +171,7 @@ class _HomePageState extends State<HomePage> {
       // whole-tile long-press handle is turned off so it doesn't fight
       // with the tile's Slidable swipe-to-edit/delete gesture.
       buildDefaultDragHandles: false,
-      onReorder: (oldIndex, newIndex) =>
+      onReorderItem: (oldIndex, newIndex) =>
           habitDatabase.reorderHabits(oldIndex, newIndex),
       itemBuilder: (context, index) {
         final habit = currentHabits[index];

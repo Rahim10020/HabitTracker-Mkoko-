@@ -17,8 +17,7 @@ class HabitDatabase extends ChangeNotifier {
 
   // save first date of app startup
   Future<void> saveFirstLaunchDate() async {
-    final existingSettings =
-        await db.select(db.appSettings).getSingleOrNull();
+    final existingSettings = await db.select(db.appSettings).getSingleOrNull();
     if (existingSettings == null) {
       await db.into(db.appSettings).insert(
             AppSettingsCompanion.insert(
@@ -115,7 +114,7 @@ class HabitDatabase extends ChangeNotifier {
             key: key,
             label: label.trim(),
             iconCodepoint: icon.codePoint,
-            colorValue: color.value,
+            colorValue: color.toARGB32(),
           ),
         );
     await readCategories();
@@ -126,9 +125,8 @@ class HabitDatabase extends ChangeNotifier {
   // Schedules one weekly-recurring notification per scheduled day of the
   // habit (see Habits.frequencyDays), via NotificationService.
   Future<void> setReminder(int id, TimeOfDay? time) async {
-    final habit =
-        await (db.select(db.habits)..where((h) => h.id.equals(id)))
-            .getSingleOrNull();
+    final habit = await (db.select(db.habits)..where((h) => h.id.equals(id)))
+        .getSingleOrNull();
     if (habit == null) return;
 
     final formatted = time == null
@@ -176,7 +174,9 @@ class HabitDatabase extends ChangeNotifier {
   }) async {
     final nextSortOrder = currentHabits.isEmpty
         ? 0
-        : currentHabits.map((h) => h.sortOrder).reduce((a, b) => a > b ? a : b) +
+        : currentHabits
+                .map((h) => h.sortOrder)
+                .reduce((a, b) => a > b ? a : b) +
             1;
 
     await db.into(db.habits).insert(
@@ -286,9 +286,8 @@ class HabitDatabase extends ChangeNotifier {
   // Marking "on" records the habit's full targetCount for today; marking
   // "off" clears it.
   Future<void> updateHabitCompletion(int id, bool isCompleted) async {
-    final habit =
-        await (db.select(db.habits)..where((h) => h.id.equals(id)))
-            .getSingleOrNull();
+    final habit = await (db.select(db.habits)..where((h) => h.id.equals(id)))
+        .getSingleOrNull();
     if (habit == null) return;
 
     await _setTodayProgress(id, isCompleted ? habit.targetCount : 0);
@@ -298,9 +297,8 @@ class HabitDatabase extends ChangeNotifier {
   // (e.g. +1/-1 glass of water), clamped to [0, targetCount]. Powers the
   // +/- stepper on quantifiable habit tiles.
   Future<void> adjustHabitProgress(int id, int delta) async {
-    final habit =
-        await (db.select(db.habits)..where((h) => h.id.equals(id)))
-            .getSingleOrNull();
+    final habit = await (db.select(db.habits)..where((h) => h.id.equals(id)))
+        .getSingleOrNull();
     if (habit == null) return;
 
     final newValue = (progressFor(id) + delta).clamp(0, habit.targetCount);
@@ -313,8 +311,7 @@ class HabitDatabase extends ChangeNotifier {
     final normalizedToday = DateTime(today.year, today.month, today.day);
 
     final existing = await (db.select(db.habitCompletions)
-          ..where(
-              (c) => c.habitId.equals(id) & c.date.equals(normalizedToday)))
+          ..where((c) => c.habitId.equals(id) & c.date.equals(normalizedToday)))
         .getSingleOrNull();
 
     if (existing == null) {
@@ -358,9 +355,8 @@ class HabitDatabase extends ChangeNotifier {
 
     // if a reminder is already set, keep it in sync with the (possibly
     // just-changed) scheduled days and name.
-    final updated =
-        await (db.select(db.habits)..where((h) => h.id.equals(id)))
-            .getSingleOrNull();
+    final updated = await (db.select(db.habits)..where((h) => h.id.equals(id)))
+        .getSingleOrNull();
     if (updated?.reminderTime != null) {
       final parts = updated!.reminderTime!.split(':');
       await NotificationService.instance.scheduleHabitReminder(

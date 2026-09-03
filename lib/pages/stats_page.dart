@@ -1,4 +1,3 @@
-import 'package:R_HabitTracker/database/app_database.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
 import 'package:R_HabitTracker/pages/habit_detail_page.dart';
 import 'package:R_HabitTracker/theme/app_spacing.dart';
@@ -88,7 +87,8 @@ class _StatsPageState extends State<StatsPage> {
                 Text('Séries par habitude', style: textTheme.titleLarge),
                 const SizedBox(height: AppSpacing.sm),
                 ...habits.map((habit) {
-                  final completedDays = habitDatabase.completedDaysFor(habit.id);
+                  final completedDays =
+                      habitDatabase.completedDaysFor(habit.id);
                   final scheduledDays = parseFrequencyDays(habit.frequencyDays);
                   final category = habitDatabase.categoryById(habit.category);
                   final current = currentStreak(completedDays, scheduledDays);
@@ -114,7 +114,7 @@ class _StatsPageState extends State<StatsPage> {
                             width: 36,
                             height: 36,
                             decoration: BoxDecoration(
-                              color: category.color.withOpacity(0.15),
+                              color: category.color.withValues(alpha: 0.15),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(category.icon,
@@ -122,8 +122,7 @@ class _StatsPageState extends State<StatsPage> {
                           ),
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
-                            child:
-                                Text(habit.name, style: textTheme.bodyLarge),
+                            child: Text(habit.name, style: textTheme.bodyLarge),
                           ),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,

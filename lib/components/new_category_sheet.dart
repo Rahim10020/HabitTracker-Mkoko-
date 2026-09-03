@@ -138,7 +138,7 @@ class _NewCategorySheetState extends State<_NewCategorySheet> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: selected
-                            ? selectedColor.withOpacity(0.2)
+                            ? selectedColor.withValues(alpha: 0.2)
                             : colorScheme.secondary,
                         border: selected
                             ? Border.all(color: selectedColor, width: 2)

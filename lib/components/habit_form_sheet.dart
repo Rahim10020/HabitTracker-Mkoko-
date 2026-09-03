@@ -244,8 +244,7 @@ class _HabitFormSheetState extends State<_HabitFormSheet> {
                   ChoiceChip(
                     label: const Text('Tous les jours'),
                     selected: frequencyType == 'daily',
-                    onSelected: (_) =>
-                        setState(() => frequencyType = 'daily'),
+                    onSelected: (_) => setState(() => frequencyType = 'daily'),
                     backgroundColor: colorScheme.secondary,
                     selectedColor: colorScheme.primary,
                     labelStyle: TextStyle(
@@ -262,8 +261,7 @@ class _HabitFormSheetState extends State<_HabitFormSheet> {
                   ChoiceChip(
                     label: const Text('Jours précis'),
                     selected: frequencyType == 'weekly',
-                    onSelected: (_) =>
-                        setState(() => frequencyType = 'weekly'),
+                    onSelected: (_) => setState(() => frequencyType = 'weekly'),
                     backgroundColor: colorScheme.secondary,
                     selectedColor: colorScheme.primary,
                     labelStyle: TextStyle(
@@ -299,9 +297,8 @@ class _HabitFormSheetState extends State<_HabitFormSheet> {
                         child: Text(
                           _weekdayLabels[i],
                           style: TextStyle(
-                            color: selected
-                                ? Colors.white
-                                : colorScheme.onSurface,
+                            color:
+                                selected ? Colors.white : colorScheme.onSurface,
                           ),
                         ),
                       ),
@@ -318,7 +315,7 @@ class _HabitFormSheetState extends State<_HabitFormSheet> {
                   Text('Objectif quantifiable', style: textTheme.titleLarge),
                   Switch(
                     value: isQuantifiable,
-                    activeColor: colorScheme.primary,
+                    activeThumbColor: colorScheme.primary,
                     onChanged: (v) => setState(() => isQuantifiable = v),
                   ),
                 ],

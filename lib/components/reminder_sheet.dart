@@ -33,7 +33,8 @@ class _ReminderSheet extends StatefulWidget {
 
 class _ReminderSheetState extends State<_ReminderSheet> {
   late bool enabled = widget.initialTime != null;
-  late TimeOfDay time = widget.initialTime ?? const TimeOfDay(hour: 8, minute: 0);
+  late TimeOfDay time =
+      widget.initialTime ?? const TimeOfDay(hour: 8, minute: 0);
 
   Future<void> _pickTime() async {
     final picked = await showTimePicker(context: context, initialTime: time);
@@ -83,14 +84,13 @@ class _ReminderSheetState extends State<_ReminderSheet> {
             ),
             Text('Rappel', style: textTheme.headlineMedium),
             const SizedBox(height: AppSpacing.lg),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Activer un rappel', style: textTheme.titleLarge),
                 Switch(
                   value: enabled,
-                  activeColor: colorScheme.primary,
+                  activeThumbColor: colorScheme.primary,
                   onChanged: (v) => setState(() => enabled = v),
                 ),
               ],
@@ -129,7 +129,6 @@ class _ReminderSheetState extends State<_ReminderSheet> {
               ),
             ],
             const SizedBox(height: AppSpacing.xl),
-
             SizedBox(
               width: double.infinity,
               height: 52,

@@ -33,7 +33,7 @@ class SettingsPage extends StatelessWidget {
                   children: [
                     Text('Mode sombre', style: textTheme.bodyLarge),
                     CupertinoSwitch(
-                      activeColor: colorScheme.primary,
+                      activeTrackColor: colorScheme.primary,
                       value: Provider.of<ThemeProvider>(context, listen: false)
                           .isDakMode,
                       onChanged: (value) =>
