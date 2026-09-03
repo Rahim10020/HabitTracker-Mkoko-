@@ -31,6 +31,13 @@ class MyHabitTile extends StatelessWidget {
   final Function(BuildContext)? onEditPressed;
   final Function(BuildContext)? onDeletePressed;
 
+  // optional drag handle for reordering (e.g. a ReorderableDragStartListener
+  // wrapping a grip icon). Rendered at the tile's leading edge, before the
+  // category icon, when provided. Kept as an injected widget rather than a
+  // callback so the tile itself doesn't need to know about
+  // ReorderableListView's index/listener plumbing.
+  final Widget? dragHandle;
+
   const MyHabitTile({
     super.key,
     required this.isCompleted,
@@ -47,6 +54,7 @@ class MyHabitTile extends StatelessWidget {
     this.onDecrement,
     required this.onEditPressed,
     required this.onDeletePressed,
+    this.dragHandle,
   });
 
   bool get _isQuantifiable => targetCount > 1;
@@ -68,6 +76,10 @@ class MyHabitTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          if (dragHandle != null) ...[
+            dragHandle!,
+            const SizedBox(width: AppSpacing.xs),
+          ],
           // category icon
           Container(
             width: 40,

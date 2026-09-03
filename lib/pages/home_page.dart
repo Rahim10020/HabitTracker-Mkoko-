@@ -163,10 +163,17 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildHabitList(HabitDatabase habitDatabase) {
     List<Habit> currentHabits = habitDatabase.currentHabits;
-    return ListView.builder(
+    final colorScheme = Theme.of(context).colorScheme;
+    return ReorderableListView.builder(
       itemCount: currentHabits.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
+      // only the explicit grip icon (below) starts a drag — the default
+      // whole-tile long-press handle is turned off so it doesn't fight
+      // with the tile's Slidable swipe-to-edit/delete gesture.
+      buildDefaultDragHandles: false,
+      onReorder: (oldIndex, newIndex) =>
+          habitDatabase.reorderHabits(oldIndex, newIndex),
       itemBuilder: (context, index) {
         final habit = currentHabits[index];
         final completedDays = habitDatabase.completedDaysFor(habit.id);
@@ -174,6 +181,7 @@ class _HomePageState extends State<HomePage> {
         bool isCompletedToday = isHabitCompletedToday(completedDays);
 
         return MyHabitTile(
+          key: ValueKey(habit.id),
           isCompleted: isCompletedToday,
           text: habit.name,
           category: habitDatabase.categoryById(habit.category),
@@ -188,6 +196,11 @@ class _HomePageState extends State<HomePage> {
           onDecrement: () => decrementHabit(habit),
           onEditPressed: (context) => editHabitBox(habit),
           onDeletePressed: (context) => deleteHabitBox(habit),
+          dragHandle: ReorderableDragStartListener(
+            index: index,
+            child: Icon(Icons.drag_indicator_rounded,
+                color: colorScheme.onSurfaceVariant),
+          ),
         );
       },
     );

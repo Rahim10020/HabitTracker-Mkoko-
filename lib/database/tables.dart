@@ -18,6 +18,10 @@ import 'package:drift/drift.dart';
 // `reminderTime`     optional "HH:mm" (24h) local time for a daily
 //                    reminder notification. Null = no reminder. Fires
 //                    only on the habit's scheduled days (frequencyDays).
+// `sortOrder`        manual display order (ascending), set by the
+//                    drag-and-drop reorder on the home list. New habits
+//                    get the current max + 1, so the default order is
+//                    creation order.
 class Habits extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
@@ -29,6 +33,7 @@ class Habits extends Table {
   IntColumn get targetCount => integer().withDefault(const Constant(1))();
   TextColumn get unit => text().nullable()();
   TextColumn get reminderTime => text().nullable()();
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
 }
 
 // -----------------------------------------------------------------------

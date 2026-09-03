@@ -173,6 +173,11 @@ class HabitDatabase extends ChangeNotifier {
     int targetCount = 1,
     String? unit,
   }) async {
+    final nextSortOrder = currentHabits.isEmpty
+        ? 0
+        : currentHabits.map((h) => h.sortOrder).reduce((a, b) => a > b ? a : b) +
+            1;
+
     await db.into(db.habits).insert(
           HabitsCompanion.insert(
             name: habitName,
@@ -181,14 +186,40 @@ class HabitDatabase extends ChangeNotifier {
             frequencyDays: Value(frequencyDays),
             targetCount: Value(targetCount),
             unit: Value(unit),
+            sortOrder: Value(nextSortOrder),
           ),
         );
     await readHabits();
   }
 
+  // UPDATE - persist a manual drag-and-drop reorder. [oldIndex]/[newIndex]
+  // are the indices from ReorderableListView.onReorder (already 0-based,
+  // over currentHabits as currently sorted). Re-numbers sortOrder for the
+  // whole list so it stays a dense, gap-free sequence.
+  Future<void> reorderHabits(int oldIndex, int newIndex) async {
+    final reordered = List<Habit>.from(currentHabits);
+    if (newIndex > oldIndex) newIndex -= 1;
+    final moved = reordered.removeAt(oldIndex);
+    reordered.insert(newIndex, moved);
+
+    await db.batch((batch) {
+      for (var i = 0; i < reordered.length; i++) {
+        batch.update(
+          db.habits,
+          HabitsCompanion(sortOrder: Value(i)),
+          where: (h) => h.id.equals(reordered[i].id),
+        );
+      }
+    });
+
+    await readHabits();
+  }
+
   // READ - read all habits (and their completions) from the database
   Future<void> readHabits() async {
-    final fetchedHabits = await db.select(db.habits).get();
+    final fetchedHabits = await (db.select(db.habits)
+          ..orderBy([(h) => OrderingTerm(expression: h.sortOrder)]))
+        .get();
 
     currentHabits
       ..clear()
