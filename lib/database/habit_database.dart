@@ -1,5 +1,6 @@
 import 'package:R_HabitTracker/database/app_database.dart';
 import 'package:R_HabitTracker/services/notification_service.dart';
+import 'package:R_HabitTracker/services/widget_service.dart';
 import 'package:R_HabitTracker/utils/habit_category.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
@@ -248,8 +249,35 @@ class HabitDatabase extends ChangeNotifier {
           todayRows.isEmpty ? 0 : todayRows.first.count;
     }
 
+    // update the Android home screen widget with today's summary
+    await _refreshHomeWidget();
+
     // update UI
     notifyListeners();
+  }
+
+  // pushes a read-only "X/Y habitudes aujourd'hui" summary + today's
+  // scheduled habits to the home screen widget. Runs after every
+  // readHabits() so the widget always reflects the latest state.
+  Future<void> _refreshHomeWidget() async {
+    final todayWeekday = DateTime.now().weekday; // 1 (Mon) .. 7 (Sun)
+    final todayHabits = <TodayHabitStatus>[];
+    var completed = 0;
+
+    for (final habit in currentHabits) {
+      if (!_parseFrequencyDays(habit.frequencyDays).contains(todayWeekday)) {
+        continue;
+      }
+      final done = progressFor(habit.id) >= habit.targetCount;
+      if (done) completed++;
+      todayHabits.add(TodayHabitStatus(habit.name, done));
+    }
+
+    await WidgetService.instance.refresh(
+      completedCount: completed,
+      totalCount: todayHabits.length,
+      todayHabits: todayHabits,
+    );
   }
 
   // UPDATE - check habit on and off for today (simple on/off habits, i.e.

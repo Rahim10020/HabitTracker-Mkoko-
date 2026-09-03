@@ -2,3 +2,11 @@
 : les rappels programmés via AlarmManager sur Android ne survivent pas à un redémarrage 
 du téléphone sans un BroadcastReceiver dédié au boot — à ajouter dans un futur patch si 
 ça te gêne en usage réel.
+
+
+⚠️ Limites assumées, vu le scope qu'on a validé :
+
+Lecture seule : pas de case à cocher depuis le widget, juste un tap qui ouvre l'app.
+Android uniquement — pas de widget iOS (nécessiterait une cible Xcode séparée).
+Le fond blanc du widget n'est pas adapté au thème sombre du launcher — à améliorer plus tard 
+si besoin.
