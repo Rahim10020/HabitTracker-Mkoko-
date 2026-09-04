@@ -51,7 +51,6 @@ class HabitDetailPage extends StatelessWidget {
             backgroundColor: Colors.transparent,
             foregroundColor: colorScheme.onSurface,
             elevation: 0,
-            title: Text(habit.name),
           ),
           body: SafeArea(
             child: ListView(
@@ -59,17 +58,6 @@ class HabitDetailPage extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: category.color.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child:
-                          Icon(category.icon, color: category.color, size: 24),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
