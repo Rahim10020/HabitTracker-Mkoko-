@@ -1,15 +1,18 @@
 import 'package:R_HabitTracker/components/celebration_overlay.dart';
+import 'package:R_HabitTracker/components/pill_nav_bar.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
 import 'package:R_HabitTracker/pages/home_page.dart';
 import 'package:R_HabitTracker/pages/settings_page.dart';
 import 'package:R_HabitTracker/pages/stats_page.dart';
 import 'package:R_HabitTracker/theme/app_spacing.dart';
+import 'package:R_HabitTracker/utils/habit_util.dart';
 import 'package:flutter/material.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:provider/provider.dart';
 
 /// Root navigation shell — replaces the old side [Drawer] with a bottom
-/// nav bar (Home / Stats / Réglages) built on google_nav_bar.
+/// bar: a [PillNavBar] (Home / Stats / Réglages, icon-only) plus a
+/// separate round "add habit" button at the same level, always visible
+/// regardless of the active tab.
 class RootShell extends StatefulWidget {
   const RootShell({super.key});
 
@@ -69,41 +72,70 @@ class _RootShellState extends State<RootShell> {
         ],
       ),
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.secondary, // card-role surface, see theme notes
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
+        color: colorScheme.surface,
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.sm,
+              AppSpacing.md,
+              AppSpacing.sm,
             ),
-            child: GNav(
-              gap: AppSpacing.sm,
-              activeColor: Colors.white,
-              color: colorScheme.onSurfaceVariant,
-              tabBackgroundColor: colorScheme.primary,
-              tabBorderRadius: AppRadius.full,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.sm,
-              ),
-              selectedIndex: _index,
-              onTabChange: (i) => setState(() => _index = i),
-              tabs: const [
-                GButton(icon: Icons.home_rounded, text: 'Accueil'),
-                GButton(icon: Icons.insights_rounded, text: 'Stats'),
-                GButton(icon: Icons.settings_rounded, text: 'Réglages'),
+            child: Row(
+              children: [
+                Expanded(
+                  child: PillNavBar(
+                    selectedIndex: _index,
+                    onChanged: (i) => setState(() => _index = i),
+                    items: const [
+                      PillNavItem(icon: Icons.home_rounded),
+                      PillNavItem(icon: Icons.insights_rounded),
+                      PillNavItem(icon: Icons.settings_rounded),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                _AddHabitButton(onPressed: () => createNewHabit(context)),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Round "add habit" button, sitting at the same level as [PillNavBar]
+/// instead of a page-level FAB.
+class _AddHabitButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _AddHabitButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        color: colorScheme.primary,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: const Icon(Icons.add_rounded, color: Colors.white),
         ),
       ),
     );

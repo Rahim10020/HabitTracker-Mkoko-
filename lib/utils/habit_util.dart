@@ -1,3 +1,25 @@
+import 'package:R_HabitTracker/database/habit_database.dart';
+import 'package:R_HabitTracker/components/habit_form_sheet.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+// shared "add habit" flow — opens the create sheet and persists the
+// result. Used both by HomePage's empty state and the root shell's
+// always-visible add button, so it lives here instead of in one page.
+
+Future<void> createNewHabit(BuildContext context) async {
+  final result = await showHabitFormSheet(context);
+  if (result == null || !context.mounted) return;
+  context.read<HabitDatabase>().addHabit(
+        result.name,
+        category: result.category,
+        frequencyType: result.frequencyType,
+        frequencyDays: result.frequencyDays,
+        targetCount: result.targetCount,
+        unit: result.unit,
+      );
+}
+
 // given completed days (per habit, or aggregated across habits)
 
 bool isHabitCompletedToday(List<DateTime> completedDays) {
