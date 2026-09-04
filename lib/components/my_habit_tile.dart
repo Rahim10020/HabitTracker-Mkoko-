@@ -270,7 +270,8 @@ class _CompletionCheckState extends State<_CompletionCheck>
   @override
   void didUpdateWidget(covariant _CompletionCheck oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.isCompleted != widget.isCompleted) {
+    if (oldWidget.isCompleted != widget.isCompleted && mounted) {
+      _controller.stop();
       _controller.forward(from: 0);
     }
   }
@@ -290,13 +291,20 @@ class _CompletionCheckState extends State<_CompletionCheck>
         widget.onTap();
       },
       child: ScaleTransition(
-        scale: TweenSequence<double>([
-          TweenSequenceItem(tween: Tween(begin: 1, end: 1.25), weight: 35),
-          TweenSequenceItem(tween: Tween(begin: 1.25, end: 1), weight: 65),
-        ]).animate(CurvedAnimation(
-          parent: _controller,
-          curve: Curves.elasticOut,
-        )),
+        scale: _controller.drive(
+          TweenSequence<double>([
+            TweenSequenceItem(
+              tween: Tween(begin: 1.0, end: 1.25)
+                  .chain(CurveTween(curve: Curves.easeOut)),
+              weight: 35,
+            ),
+            TweenSequenceItem(
+              tween: Tween(begin: 1.25, end: 1.0)
+                  .chain(CurveTween(curve: Curves.elasticOut)),
+              weight: 65,
+            ),
+          ]),
+        ),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           width: 28,
