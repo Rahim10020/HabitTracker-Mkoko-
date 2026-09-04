@@ -36,7 +36,8 @@ class _SvgCache {
     var processed = raw;
 
     if (strokeWidth != null) {
-      processed = processed.replaceAll('<path', '<path stroke-width="$strokeWidth"');
+      processed =
+          processed.replaceAll('<path', '<path stroke-width="$strokeWidth"');
     }
 
     _cache[key] = processed;
@@ -54,7 +55,7 @@ class AppSvgIcon extends StatefulWidget {
     super.key,
     required this.icon,
     this.color,
-    this.size = 24,
+    this.size = 16,
     this.strokeWidth,
   });
 

@@ -136,7 +136,10 @@ class _AddHabitButton extends StatelessWidget {
         child: InkWell(
           onTap: onPressed,
           borderRadius: BorderRadius.circular(16),
-          child: const Icon(Icons.add_rounded, color: Colors.white),
+          child: const AppSvgIcon(
+            icon: AppIcon.add,
+            color: Colors.white,
+          ),
         ),
       ),
     );
