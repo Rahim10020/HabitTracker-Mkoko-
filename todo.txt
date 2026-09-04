@@ -1,1 +1,9 @@
--- ensuite faire le excalidraw et tout est bon (je pourrais alors marquer ca comme polished dans notion)
+voila ce que je veux faire:
+- je veux que ma bottom nav bar sois flottante (ca va etre au dessus de la liste des habitudes) c'est pas le cas
+pour le moment.
+- on va mettre un barre de recherche pour permettre la recherche des habitudes
+- je veux que la heatmap sur la home page sois fixe. c'est seulement la liste que  sera scrollable
+- l'icone de notification est  trop petite (trouver un meilleur emplacement pour le placer), ca fais que 
+quand je veux cliquer dessus, ca marque l'habitude comme completee
+alors que c'est pas ce que je veux. on va aussi mettre cette icone dans la page de detail des habitudes
+
