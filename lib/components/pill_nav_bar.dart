@@ -18,7 +18,7 @@ class PillNavBar extends StatelessWidget {
     required this.selectedIndex,
     required this.onChanged,
     required this.items,
-    this.height = 56,
+    this.height = 60,
   });
 
   @override
@@ -27,10 +27,10 @@ class PillNavBar extends StatelessWidget {
     final radius = BorderRadius.circular(AppRadius.full);
 
     return Container(
-      width: items.length * 56,
+      width: items.length * 60,
       height: height,
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: colorScheme.secondary,
         borderRadius: radius,
         boxShadow: [
           BoxShadow(
@@ -81,14 +81,14 @@ class _PillNavItem extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadius.full),
       child: SizedBox(
-        width: 56,
+        width: 60,
         height: height,
         child: Center(
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOut,
-            width: 44,
-            height: 44,
+            width: 56,
+            height: 56,
             decoration: BoxDecoration(
               color: selected ? colorScheme.primary : Colors.transparent,
               borderRadius: BorderRadius.circular(AppRadius.full),

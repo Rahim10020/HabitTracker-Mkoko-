@@ -22,7 +22,7 @@ class AppColors {
 
   // ---- Dark ----
   static const darkPrimary = Color(0xFFda627d);
-  static const darkPrimaryContainer = Color(0xFF3A2A22);
+  static const darkPrimaryContainer = Color(0xFFf26a8d);
   static const darkSecondary = Color(0xFF2DBDAF);
   static const darkSuccess = Color(0xFF34D399);
   static const darkBackground = Color(0xFF121212);
