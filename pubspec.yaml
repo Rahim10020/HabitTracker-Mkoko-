@@ -34,6 +34,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  flutter_svg: ^2.0.10
   provider:
   google_nav_bar: ^5.0.6
   google_fonts: ^6.3.3
@@ -87,6 +88,7 @@ flutter:
     - assets/images/man.png
     - assets/images/habits.png
     - assets/images/mental-health.png
+    - assets/icons/
     - assets/google_fonts/
 
   # To add custom fonts to your application, add a fonts section here,

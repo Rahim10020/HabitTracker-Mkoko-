@@ -32,7 +32,7 @@ class PillNavBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.secondary,
         borderRadius: radius,
-        border: BoxBorder.all(color: colorScheme.onSurface),
+        border: BoxBorder.all(color: colorScheme.onSurface, width: 2),
         boxShadow: [
           BoxShadow(
             color: colorScheme.shadow.withValues(alpha: 0.08),
@@ -89,8 +89,8 @@ class _PillNavItem extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOut,
-            width: 56,
-            height: 56,
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
               color: selected ? colorScheme.primary : Colors.transparent,
               borderRadius: BorderRadius.circular(AppRadius.full),
