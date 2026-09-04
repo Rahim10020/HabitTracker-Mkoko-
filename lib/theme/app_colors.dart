@@ -9,7 +9,7 @@ class AppColors {
   AppColors._();
 
   // ---- Light ----
-  static const lightPrimary = Color(0xFFFF7A59);
+  static const lightPrimary = Color(0xFFda627d);
   static const lightPrimaryContainer = Color(0xFFFFE8DE);
   static const lightSecondary = Color(0xFF0F9B8E);
   static const lightSuccess = Color(0xFF22C55E);
