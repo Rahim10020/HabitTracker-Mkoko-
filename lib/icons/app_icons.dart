@@ -19,6 +19,7 @@ enum AppIcon {
   search('search.svg'),
   settings('settings.svg'),
   stats('stats.svg'),
+  close('close.svg'),
   timer('timer.svg');
 
   final String fileName;

@@ -9,6 +9,7 @@ import 'package:R_HabitTracker/components/my_heat_map.dart';
 import 'package:R_HabitTracker/components/reminder_sheet.dart';
 import 'package:R_HabitTracker/database/app_database.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
+import 'package:R_HabitTracker/icons/app_icons.dart';
 import 'package:R_HabitTracker/utils/habit_util.dart';
 import 'package:R_HabitTracker/utils/streak_util.dart';
 import 'package:flutter/material.dart';
@@ -136,7 +137,7 @@ class _HomePageState extends State<HomePage> {
                   IconButton(
                     onPressed: _toggleSearch,
                     tooltip: 'Fermer la recherche',
-                    icon: const Icon(Icons.close_rounded),
+                    icon: const AppSvgIcon(icon: AppIcon.close),
                   ),
                 ],
               )
