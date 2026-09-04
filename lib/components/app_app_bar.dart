@@ -1,3 +1,4 @@
+import 'package:R_HabitTracker/icons/app_icons.dart';
 import 'package:flutter/material.dart';
 
 class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -24,7 +25,7 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
           IconButton(
             onPressed: onSearchPressed,
             tooltip: 'Rechercher',
-            icon: const Icon(Icons.search_rounded),
+            icon: const AppSvgIcon(icon: AppIcon.search),
           ),
       ],
     );
