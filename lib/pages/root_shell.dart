@@ -24,6 +24,7 @@ class RootShell extends StatefulWidget {
 class _RootShellState extends State<RootShell> {
   int _index = 0;
   final _celebrationKey = GlobalKey<CelebrationOverlayState>();
+  late final HabitDatabase _database;
 
   static const _pages = [
     HomePage(),
@@ -34,18 +35,17 @@ class _RootShellState extends State<RootShell> {
   @override
   void initState() {
     super.initState();
-    final database = context.read<HabitDatabase>();
-    database.onDayCompleted =
+    _database = context.read<HabitDatabase>();
+    _database.onDayCompleted =
         () => _celebrationKey.currentState?.show(const DayCompleted());
-    database.onStreakMilestone =
+    _database.onStreakMilestone =
         (days) => _celebrationKey.currentState?.show(StreakMilestone(days));
   }
 
   @override
   void dispose() {
-    final database = context.read<HabitDatabase>();
-    database.onDayCompleted = null;
-    database.onStreakMilestone = null;
+    _database.onDayCompleted = null;
+    _database.onStreakMilestone = null;
     super.dispose();
   }
 
