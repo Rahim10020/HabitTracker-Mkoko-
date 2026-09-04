@@ -3,6 +3,22 @@
 du téléphone sans un BroadcastReceiver dédié au boot — à ajouter dans un futur patch si 
 ça gêne en usage réel.
 
+Another exception was thrown:
+'package:flutter/src/animation/tween_sequence.dart': Failed
+assertion: line 81 pos 12: 't >= 0.0 && t <= 1.0': is not
+true.
+Another exception was thrown:
+'package:flutter/src/animation/tween_sequence.dart': Failed
+assertion: line 81 pos 12: 't >= 0.0 && t <= 1.0': is not
+true.
+Another exception was thrown:
+'package:flutter/src/animation/tween_sequence.dart': Failed
+assertion: line 81 pos 12: 't >= 0.0 && t <= 1.0': is not
+true.
+Another exception was thrown: Looking up a deactivated
+widget's ancestor is unsafe.
+
+
 
 ⚠️ Limites assumées, vu le scope qu'on a validé :
 Le fond blanc du widget n'est pas adapté au thème sombre du launcher — à améliorer plus tard 
