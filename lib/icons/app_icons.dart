@@ -95,6 +95,8 @@ class _AppSvgIconState extends State<AppSvgIcon> {
           height: widget.size,
           child: SvgPicture.string(
             snapshot.data!,
+            width: widget.size,
+            height: widget.size,
             fit: BoxFit.contain,
             colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
           ),

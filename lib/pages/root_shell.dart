@@ -133,10 +133,16 @@ class _AddHabitButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onPressed,
-          child: const AppSvgIcon(
-            icon: AppIcon.add,
-            size: 16,
-            color: Colors.white,
+          child: const Center(
+            child: SizedBox.square(
+              dimension: 20,
+              child: AppSvgIcon(
+                icon: AppIcon.add,
+                size: 20,
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            ),
           ),
         ),
       ),
