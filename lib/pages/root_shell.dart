@@ -1,6 +1,7 @@
 import 'package:R_HabitTracker/components/celebration_overlay.dart';
 import 'package:R_HabitTracker/components/pill_nav_bar.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
+import 'package:R_HabitTracker/icons/app_icons.dart';
 import 'package:R_HabitTracker/pages/home_page.dart';
 import 'package:R_HabitTracker/pages/settings_page.dart';
 import 'package:R_HabitTracker/pages/stats_page.dart';
@@ -88,12 +89,12 @@ class _RootShellState extends State<RootShell> {
                   selectedIndex: _index,
                   onChanged: (i) => setState(() => _index = i),
                   items: const [
-                    PillNavItem(icon: Icons.home_rounded),
-                    PillNavItem(icon: Icons.insights_rounded),
-                    PillNavItem(icon: Icons.settings_rounded),
+                    PillNavItem(icon: AppIcon.home),
+                    PillNavItem(icon: AppIcon.stats),
+                    PillNavItem(icon: AppIcon.settings),
                   ],
                 ),
-                const SizedBox(width: AppSpacing.sm),
+                const SizedBox(width: AppSpacing.lg),
                 _AddHabitButton(onPressed: () => createNewHabit(context)),
               ],
             ),

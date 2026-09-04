@@ -1,8 +1,9 @@
+import 'package:R_HabitTracker/icons/app_icons.dart';
 import 'package:R_HabitTracker/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
 
 class PillNavItem {
-  final IconData icon;
+  final AppIcon icon;
 
   const PillNavItem({required this.icon});
 }
@@ -64,7 +65,7 @@ class PillNavBar extends StatelessWidget {
 }
 
 class _PillNavItem extends StatelessWidget {
-  final IconData icon;
+  final AppIcon icon;
   final bool selected;
   final double height;
   final VoidCallback onTap;
@@ -96,9 +97,10 @@ class _PillNavItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
             alignment: Alignment.center,
-            child: Icon(
-              icon,
+            child: AppSvgIcon(
+              icon: icon,
               color: selected ? Colors.white : colorScheme.onSurface,
+              size: 24,
             ),
           ),
         ),
