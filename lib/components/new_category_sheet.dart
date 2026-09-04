@@ -1,3 +1,4 @@
+import 'package:R_HabitTracker/components/app_text_field.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
 import 'package:R_HabitTracker/theme/app_spacing.dart';
 import 'package:R_HabitTracker/utils/custom_category_options.dart';
@@ -103,18 +104,10 @@ class _NewCategorySheetState extends State<_NewCategorySheet> {
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
-                    child: TextField(
+                    child: AppTextField(
                       controller: labelController,
+                      hintText: 'Nom de la catégorie',
                       autofocus: true,
-                      decoration: InputDecoration(
-                        hintText: 'Nom de la catégorie',
-                        filled: true,
-                        fillColor: colorScheme.secondary,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
                       onChanged: (_) => setState(() {}),
                     ),
                   ),

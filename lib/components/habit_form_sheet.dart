@@ -1,3 +1,4 @@
+import 'package:R_HabitTracker/components/app_text_field.dart';
 import 'package:R_HabitTracker/components/new_category_sheet.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
 import 'package:R_HabitTracker/theme/app_spacing.dart';
@@ -170,20 +171,12 @@ class _HabitFormSheetState extends State<_HabitFormSheet> {
               ),
               const SizedBox(height: AppSpacing.lg),
 
-              // name
-              TextField(
-                controller: nameController,
-                autofocus: !isEditing,
-                decoration: InputDecoration(
-                  hintText: 'Nom de l\'habitude',
-                  filled: true,
-                  fillColor: colorScheme.secondary,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
+               // name
+               AppTextField(
+                 controller: nameController,
+                 hintText: 'Nom de l\'habitude',
+                 autofocus: !isEditing,
+               ),
               const SizedBox(height: AppSpacing.lg),
 
               // category
@@ -354,17 +347,9 @@ class _HabitFormSheetState extends State<_HabitFormSheet> {
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
-                      child: TextField(
+                      child: AppTextField(
                         controller: unitController,
-                        decoration: InputDecoration(
-                          hintText: 'Unité (ex: verres, pages, min)',
-                          filled: true,
-                          fillColor: colorScheme.secondary,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.md),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
+                        hintText: 'Unité (ex: verres, pages, min)',
                       ),
                     ),
                   ],
