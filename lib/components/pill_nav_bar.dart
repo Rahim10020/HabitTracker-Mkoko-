@@ -46,14 +46,15 @@ class PillNavBar extends StatelessWidget {
         borderRadius: radius,
         clipBehavior: Clip.antiAlias,
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
             for (var index = 0; index < items.length; index++)
-              _PillNavItem(
-                icon: items[index].icon,
-                selected: index == selectedIndex,
-                height: height,
-                onTap: () => onChanged(index),
+              Expanded(
+                child: _PillNavItem(
+                  icon: items[index].icon,
+                  selected: index == selectedIndex,
+                  height: height,
+                  onTap: () => onChanged(index),
+                ),
               ),
           ],
         ),
