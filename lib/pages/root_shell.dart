@@ -82,6 +82,7 @@ class _RootShellState extends State<RootShell> {
               AppSpacing.sm,
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 PillNavBar(
                   selectedIndex: _index,
