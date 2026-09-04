@@ -22,38 +22,38 @@ ThemeData darkMode = ThemeData(
     outline: AppColors.darkBorder,
     inversePrimary: AppColors.darkTextPrimary,
   ),
-  textTheme: GoogleFonts.snigletTextTheme(ThemeData.dark().textTheme).copyWith(
-    displayLarge: GoogleFonts.sniglet(
+  textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
+    displayLarge: GoogleFonts.inter(
       fontSize: 32,
       height: 40 / 32,
       fontWeight: FontWeight.w700,
       color: AppColors.darkTextPrimary,
     ),
-    headlineMedium: GoogleFonts.sniglet(
+    headlineMedium: GoogleFonts.inter(
       fontSize: 24,
       height: 32 / 24,
       fontWeight: FontWeight.w600,
       color: AppColors.darkTextPrimary,
     ),
-    titleLarge: GoogleFonts.sniglet(
+    titleLarge: GoogleFonts.inter(
       fontSize: 18,
       height: 24 / 18,
       fontWeight: FontWeight.w600,
       color: AppColors.darkTextPrimary,
     ),
-    bodyLarge: GoogleFonts.sniglet(
+    bodyLarge: GoogleFonts.inter(
       fontSize: 16,
       height: 24 / 16,
       fontWeight: FontWeight.w400,
       color: AppColors.darkTextPrimary,
     ),
-    bodyMedium: GoogleFonts.sniglet(
+    bodyMedium: GoogleFonts.inter(
       fontSize: 14,
       height: 20 / 14,
       fontWeight: FontWeight.w400,
       color: AppColors.darkTextSecondary,
     ),
-    labelSmall: GoogleFonts.sniglet(
+    labelSmall: GoogleFonts.inter(
       fontSize: 12,
       height: 16 / 12,
       fontWeight: FontWeight.w500,
