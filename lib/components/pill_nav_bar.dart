@@ -84,10 +84,20 @@ class _PillNavItem extends StatelessWidget {
         width: 56,
         height: height,
         child: Center(
-          child: Icon(
-            icon,
-            color:
-                selected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: selected ? colorScheme.primary : Colors.transparent,
+              borderRadius: BorderRadius.circular(AppRadius.full),
+            ),
+            alignment: Alignment.center,
+            child: Icon(
+              icon,
+              color: selected ? Colors.white : colorScheme.onSurface,
+            ),
           ),
         ),
       ),

@@ -10,7 +10,7 @@ class AppColors {
 
   // ---- Light ----
   static const lightPrimary = Color(0xFFda627d);
-  static const lightPrimaryContainer = Color(0xFFFFE8DE);
+  static const lightPrimaryContainer = Color(0xFFf26a8d);
   static const lightSecondary = Color(0xFF0F9B8E);
   static const lightSuccess = Color(0xFF22C55E);
   static const lightBackground = Color(0xFFF3F3F3);
@@ -21,7 +21,7 @@ class AppColors {
   static const lightError = Color(0xFFEF4444);
 
   // ---- Dark ----
-  static const darkPrimary = Color(0xFFFF8A66);
+  static const darkPrimary = Color(0xFFda627d);
   static const darkPrimaryContainer = Color(0xFF3A2A22);
   static const darkSecondary = Color(0xFF2DBDAF);
   static const darkSuccess = Color(0xFF34D399);
