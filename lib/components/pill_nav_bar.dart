@@ -27,6 +27,7 @@ class PillNavBar extends StatelessWidget {
     final radius = BorderRadius.circular(AppRadius.full);
 
     return Container(
+      width: items.length * 56,
       height: height,
       decoration: BoxDecoration(
         color: colorScheme.surface,
@@ -44,15 +45,14 @@ class PillNavBar extends StatelessWidget {
         borderRadius: radius,
         clipBehavior: Clip.antiAlias,
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             for (var index = 0; index < items.length; index++)
-              Expanded(
-                child: _PillNavItem(
-                  icon: items[index].icon,
-                  selected: index == selectedIndex,
-                  height: height,
-                  onTap: () => onChanged(index),
-                ),
+              _PillNavItem(
+                icon: items[index].icon,
+                selected: index == selectedIndex,
+                height: height,
+                onTap: () => onChanged(index),
               ),
           ],
         ),
@@ -81,6 +81,7 @@ class _PillNavItem extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadius.full),
       child: SizedBox(
+        width: 56,
         height: height,
         child: Center(
           child: Icon(

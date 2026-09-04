@@ -83,16 +83,14 @@ class _RootShellState extends State<RootShell> {
             ),
             child: Row(
               children: [
-                Expanded(
-                  child: PillNavBar(
-                    selectedIndex: _index,
-                    onChanged: (i) => setState(() => _index = i),
-                    items: const [
-                      PillNavItem(icon: Icons.home_rounded),
-                      PillNavItem(icon: Icons.insights_rounded),
-                      PillNavItem(icon: Icons.settings_rounded),
-                    ],
-                  ),
+                PillNavBar(
+                  selectedIndex: _index,
+                  onChanged: (i) => setState(() => _index = i),
+                  items: const [
+                    PillNavItem(icon: Icons.home_rounded),
+                    PillNavItem(icon: Icons.insights_rounded),
+                    PillNavItem(icon: Icons.settings_rounded),
+                  ],
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 _AddHabitButton(onPressed: () => createNewHabit(context)),

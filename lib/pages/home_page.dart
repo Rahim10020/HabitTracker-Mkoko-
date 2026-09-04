@@ -5,7 +5,6 @@ import 'package:R_HabitTracker/components/habit_form_sheet.dart';
 import 'package:R_HabitTracker/components/home_summary_header.dart';
 import 'package:R_HabitTracker/components/my_habit_tile.dart';
 import 'package:R_HabitTracker/components/my_heat_map.dart';
-import 'package:R_HabitTracker/components/primary_fab.dart';
 import 'package:R_HabitTracker/components/reminder_sheet.dart';
 import 'package:R_HabitTracker/database/app_database.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
@@ -107,7 +106,6 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: const AppAppBar(),
       backgroundColor: Theme.of(context).colorScheme.surface,
-      floatingActionButton: PrimaryFAB(onPressed: createNewHabit),
       body: Consumer<HabitDatabase>(
         builder: (context, habitDatabase, _) {
           if (habitDatabase.currentHabits.isEmpty) {
