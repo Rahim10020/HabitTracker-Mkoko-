@@ -118,8 +118,6 @@ class _MyHabitTileState extends State<MyHabitTile>
               color: widget.category.color.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(widget.category.icon,
-                color: widget.category.color, size: 20),
           ),
           const SizedBox(width: AppSpacing.md),
           // name + meta (+ progress bar for quantifiable habits)

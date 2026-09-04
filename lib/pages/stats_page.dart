@@ -128,8 +128,6 @@ class _StatsPageState extends State<StatsPage> {
                               color: category.color.withValues(alpha: 0.15),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(category.icon,
-                                color: category.color, size: 18),
                           ),
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
