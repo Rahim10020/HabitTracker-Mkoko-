@@ -1,4 +1,5 @@
 import 'package:R_HabitTracker/database/habit_database.dart';
+import 'package:R_HabitTracker/icons/app_icons.dart';
 import 'package:R_HabitTracker/pages/habit_detail_page.dart';
 import 'package:R_HabitTracker/theme/app_spacing.dart';
 import 'package:R_HabitTracker/utils/streak_util.dart';
@@ -33,9 +34,27 @@ class _StatsPageState extends State<StatsPage> {
 
             if (habits.isEmpty) {
               return Center(
-                child: Text(
-                  'Crée une habitude pour voir tes stats ici.',
-                  style: textTheme.bodyMedium,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 38,
+                      height: 38,
+                      child: AppSvgIcon(
+                        icon: AppIcon.stats,
+                        color: colorScheme.primary,
+                        size: 16,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 32,
+                    ),
+                    Text(
+                      'Crée une habitude pour voir tes stats ici.',
+                      style: textTheme.bodyLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               );
             }
