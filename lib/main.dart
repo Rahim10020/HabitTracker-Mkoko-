@@ -3,10 +3,12 @@ import 'package:R_HabitTracker/pages/root_shell.dart';
 import 'package:R_HabitTracker/services/notification_service.dart';
 import 'package:R_HabitTracker/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  GoogleFonts.config.allowRuntimeFetching = false;
   // we gonna initialize the database
   await HabitDatabase.initialize();
   // and we gonna save the first launch date
