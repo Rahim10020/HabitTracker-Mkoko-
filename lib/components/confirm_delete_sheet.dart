@@ -1,4 +1,4 @@
-import 'package:R_HabitTracker/theme/app_colors.dart';
+import 'package:R_HabitTracker/components/app_modal_sheet.dart';
 import 'package:R_HabitTracker/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
 
@@ -26,19 +26,8 @@ class _ConfirmDeleteSheet extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xl),
-        ),
-      ),
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xl,
-        AppSpacing.lg,
-        AppSpacing.xl,
-        AppSpacing.xl,
-      ),
+    return AppModalSheet(
+      title: 'Supprimer « $habitName » ?',
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,7 +43,6 @@ class _ConfirmDeleteSheet extends StatelessWidget {
               ),
             ),
           ),
-          Text('Supprimer « $habitName » ?', style: textTheme.headlineMedium),
           const SizedBox(height: AppSpacing.sm),
           Text(
             'Cette action supprime aussi tout l\'historique de complétion de cette habitude. C\'est irréversible.',
@@ -67,7 +55,8 @@ class _ConfirmDeleteSheet extends StatelessWidget {
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(context, false),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: AppSpacing.md),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppRadius.full),
                     ),
@@ -80,10 +69,11 @@ class _ConfirmDeleteSheet extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context, true),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.lightError,
+                    backgroundColor: colorScheme.error,
                     foregroundColor: Colors.white,
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: AppSpacing.md),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppRadius.full),
                     ),

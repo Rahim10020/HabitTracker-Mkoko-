@@ -1,4 +1,5 @@
 import 'package:R_HabitTracker/theme/app_spacing.dart';
+import 'package:R_HabitTracker/components/animated_progress_indicator.dart';
 import 'package:flutter/material.dart';
 
 class HomeSummaryHeader extends StatelessWidget {
@@ -34,19 +35,10 @@ class HomeSummaryHeader extends StatelessWidget {
             style: textTheme.bodyMedium,
           ),
           const SizedBox(height: AppSpacing.sm),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.full),
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: progress),
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeOutCubic,
-              builder: (context, value, _) => LinearProgressIndicator(
-                value: value,
-                minHeight: 8,
-                backgroundColor: colorScheme.secondary,
-                valueColor: AlwaysStoppedAnimation(colorScheme.primary),
-              ),
-            ),
+          AnimatedProgressIndicator(
+            progress: progress,
+            backgroundColor: colorScheme.secondary,
+            valueColor: colorScheme.primary,
           ),
         ],
       ),

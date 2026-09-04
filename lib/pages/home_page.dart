@@ -1,9 +1,11 @@
 import 'package:R_HabitTracker/components/confirm_delete_sheet.dart';
+import 'package:R_HabitTracker/components/app_app_bar.dart';
 import 'package:R_HabitTracker/components/empty_habits_view.dart';
 import 'package:R_HabitTracker/components/habit_form_sheet.dart';
 import 'package:R_HabitTracker/components/home_summary_header.dart';
 import 'package:R_HabitTracker/components/my_habit_tile.dart';
 import 'package:R_HabitTracker/components/my_heat_map.dart';
+import 'package:R_HabitTracker/components/primary_fab.dart';
 import 'package:R_HabitTracker/components/reminder_sheet.dart';
 import 'package:R_HabitTracker/database/app_database.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
@@ -103,18 +105,9 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-        elevation: 0,
-      ),
+      appBar: const AppAppBar(),
       backgroundColor: Theme.of(context).colorScheme.surface,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        elevation: 0,
-        onPressed: createNewHabit,
-        child: const Icon(Icons.add_rounded, color: Colors.white),
-      ),
+      floatingActionButton: PrimaryFAB(onPressed: createNewHabit),
       body: Consumer<HabitDatabase>(
         builder: (context, habitDatabase, _) {
           if (habitDatabase.currentHabits.isEmpty) {

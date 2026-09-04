@@ -1,3 +1,4 @@
+import 'package:R_HabitTracker/components/animated_progress_indicator.dart';
 import 'package:R_HabitTracker/theme/app_colors.dart';
 import 'package:R_HabitTracker/theme/app_spacing.dart';
 import 'package:R_HabitTracker/utils/habit_category.dart';
@@ -171,28 +172,14 @@ class _MyHabitTileState extends State<MyHabitTile>
                 ),
                 if (_isQuantifiable) ...[
                   const SizedBox(height: AppSpacing.xs),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween(
-                        begin: 0,
-                        end: (widget.currentValue / widget.targetCount)
-                            .clamp(0.0, 1.0),
-                      ),
-                      duration: const Duration(milliseconds: 350),
-                      curve: Curves.easeOutCubic,
-                      builder: (context, value, _) => LinearProgressIndicator(
-                        value: value,
-                        minHeight: 5,
-                        backgroundColor:
-                            colorScheme.outline.withValues(alpha: 0.3),
-                        valueColor: AlwaysStoppedAnimation(
-                          widget.isCompleted
-                              ? AppColors.lightSuccess
-                              : colorScheme.primary,
-                        ),
-                      ),
-                    ),
+                  AnimatedProgressIndicator(
+                    progress: widget.currentValue / widget.targetCount,
+                    minHeight: 5,
+                    duration: const Duration(milliseconds: 350),
+                    backgroundColor: colorScheme.outline.withValues(alpha: 0.3),
+                    valueColor: widget.isCompleted
+                        ? AppColors.lightSuccess
+                        : colorScheme.primary,
                   ),
                 ],
               ],
@@ -239,7 +226,7 @@ class _MyHabitTileState extends State<MyHabitTile>
             ),
             SlidableAction(
               onPressed: widget.onDeletePressed,
-              backgroundColor: AppColors.lightError,
+              backgroundColor: colorScheme.error,
               foregroundColor: Colors.white,
               icon: Icons.delete_rounded,
               borderRadius: const BorderRadius.only(

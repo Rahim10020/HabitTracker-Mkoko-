@@ -1,5 +1,10 @@
 import 'package:R_HabitTracker/components/app_text_field.dart';
+import 'package:R_HabitTracker/components/app_modal_sheet.dart';
+import 'package:R_HabitTracker/components/choice_chip_group.dart';
 import 'package:R_HabitTracker/components/new_category_sheet.dart';
+import 'package:R_HabitTracker/components/primary_button.dart';
+import 'package:R_HabitTracker/components/scaled_choice_chip.dart';
+import 'package:R_HabitTracker/components/weekday_selector.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
 import 'package:R_HabitTracker/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
@@ -22,8 +27,6 @@ class HabitFormResult {
     required this.unit,
   });
 }
-
-const _weekdayLabels = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
 /// Shows the create/edit habit form as a modal bottom sheet and returns a
 /// [HabitFormResult], or null if the user cancelled.
@@ -132,251 +135,125 @@ class _HabitFormSheetState extends State<_HabitFormSheet> {
     final textTheme = Theme.of(context).textTheme;
     final isEditing = widget.initialName != null;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppRadius.xl),
+    return AppModalSheet(
+      title: isEditing ? 'Modifier l\'habitude' : 'Nouvelle habitude',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // name
+          AppTextField(
+            controller: nameController,
+            hintText: 'Nom de l\'habitude',
+            autofocus: !isEditing,
           ),
-        ),
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xl,
-          AppSpacing.md,
-          AppSpacing.xl,
-          AppSpacing.xl,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: AppSpacing.lg),
-                  decoration: BoxDecoration(
-                    color: colorScheme.outline,
-                    borderRadius: BorderRadius.circular(AppRadius.full),
-                  ),
-                ),
-              ),
-              Text(
-                isEditing ? 'Modifier l\'habitude' : 'Nouvelle habitude',
-                style: textTheme.headlineMedium,
-              ),
-              const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.lg),
 
-               // name
-               AppTextField(
-                 controller: nameController,
-                 hintText: 'Nom de l\'habitude',
-                 autofocus: !isEditing,
-               ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // category
-              Text('Catégorie', style: textTheme.titleLarge),
-              const SizedBox(height: AppSpacing.sm),
-              Consumer<HabitDatabase>(
-                builder: (context, habitDatabase, _) {
-                  return Wrap(
-                    spacing: AppSpacing.sm,
-                    runSpacing: AppSpacing.sm,
-                    children: [
-                      ...habitDatabase.allCategories.map((c) {
-                        final selected = category == c.id;
-                        return TweenAnimationBuilder<double>(
-                          tween: Tween(begin: 1, end: selected ? 1.08 : 1),
-                          duration: const Duration(milliseconds: 180),
-                          curve: Curves.easeOutBack,
-                          builder: (context, scale, child) => Transform.scale(
-                            scale: scale,
-                            child: child,
-                          ),
-                          child: ChoiceChip(
-                            label: Text(c.label),
-                            avatar: Icon(c.icon,
-                                size: 16,
-                                color: selected ? Colors.white : c.color),
-                            selected: selected,
-                            onSelected: (_) => setState(() => category = c.id),
-                            selectedColor: c.color,
-                            backgroundColor: colorScheme.secondary,
-                            labelStyle: TextStyle(
-                              color: selected
-                                  ? Colors.white
-                                  : colorScheme.onSurface,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(AppRadius.full),
-                              side: BorderSide.none,
-                            ),
-                          ),
-                        );
-                      }),
-                      ActionChip(
-                        avatar: Icon(Icons.add_rounded,
-                            size: 16, color: colorScheme.primary),
-                        label: Text(
-                          'Nouvelle catégorie',
-                          style: TextStyle(color: colorScheme.primary),
-                        ),
-                        backgroundColor: colorScheme.secondary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.full),
-                          side: BorderSide(color: colorScheme.primary),
-                        ),
-                        onPressed: () => _createCategory(context),
-                      ),
-                    ],
-                  );
-                },
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // frequency
-              Text('Fréquence', style: textTheme.titleLarge),
-              const SizedBox(height: AppSpacing.sm),
-              Row(
+          // category
+          Text('Catégorie', style: textTheme.titleLarge),
+          const SizedBox(height: AppSpacing.sm),
+          Consumer<HabitDatabase>(
+            builder: (context, habitDatabase, _) {
+              return Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
                 children: [
-                  ChoiceChip(
-                    label: const Text('Tous les jours'),
-                    selected: frequencyType == 'daily',
-                    onSelected: (_) => setState(() => frequencyType = 'daily'),
-                    backgroundColor: colorScheme.secondary,
-                    selectedColor: colorScheme.primary,
-                    labelStyle: TextStyle(
-                      color: frequencyType == 'daily'
-                          ? Colors.white
-                          : colorScheme.onSurface,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.full),
-                      side: BorderSide.none,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  ChoiceChip(
-                    label: const Text('Jours précis'),
-                    selected: frequencyType == 'weekly',
-                    onSelected: (_) => setState(() => frequencyType = 'weekly'),
-                    backgroundColor: colorScheme.secondary,
-                    selectedColor: colorScheme.primary,
-                    labelStyle: TextStyle(
-                      color: frequencyType == 'weekly'
-                          ? Colors.white
-                          : colorScheme.onSurface,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.full),
-                      side: BorderSide.none,
-                    ),
-                  ),
-                ],
-              ),
-              if (frequencyType == 'weekly') ...[
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: List.generate(7, (i) {
-                    final weekday = i + 1; // 1=Mon..7=Sun
-                    final selected = selectedDays.contains(weekday);
-                    return GestureDetector(
-                      onTap: () => setState(() {
-                        selected
-                            ? selectedDays.remove(weekday)
-                            : selectedDays.add(weekday);
-                      }),
-                      child: AnimatedScale(
-                        scale: selected ? 1.08 : 1,
-                        duration: const Duration(milliseconds: 180),
-                        curve: Curves.easeOutBack,
-                        child: CircleAvatar(
-                          radius: 18,
-                          backgroundColor: selected
-                              ? colorScheme.primary
-                              : colorScheme.secondary,
-                          child: Text(
-                            _weekdayLabels[i],
-                            style: TextStyle(
-                              color: selected
-                                  ? Colors.white
-                                  : colorScheme.onSurface,
-                            ),
-                          ),
-                        ),
-                      ),
+                  ...habitDatabase.allCategories.map((c) {
+                    final selected = category == c.id;
+                    return ScaledChoiceChip(
+                      label: c.label,
+                      selected: selected,
+                      onSelected: () => setState(() => category = c.id),
+                      selectedColor: c.color,
+                      avatar: c.icon,
+                      avatarColor: c.color,
                     );
                   }),
-                ),
-              ],
-              const SizedBox(height: AppSpacing.lg),
-
-              // quantifiable objective
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Objectif quantifiable', style: textTheme.titleLarge),
-                  Switch(
-                    value: isQuantifiable,
-                    activeThumbColor: colorScheme.primary,
-                    onChanged: (v) => setState(() => isQuantifiable = v),
-                  ),
-                ],
-              ),
-              if (isQuantifiable) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => setState(() {
-                        if (targetCount > 1) targetCount--;
-                      }),
-                      icon: const Icon(Icons.remove_circle_outline_rounded),
+                  ActionChip(
+                    avatar: Icon(Icons.add_rounded,
+                        size: 16, color: colorScheme.primary),
+                    label: Text(
+                      'Nouvelle catégorie',
+                      style: TextStyle(color: colorScheme.primary),
                     ),
-                    Text('$targetCount', style: textTheme.titleLarge),
-                    IconButton(
-                      onPressed: () => setState(() => targetCount++),
-                      icon: const Icon(Icons.add_circle_outline_rounded),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: AppTextField(
-                        controller: unitController,
-                        hintText: 'Unité (ex: verres, pages, min)',
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-              const SizedBox(height: AppSpacing.xl),
-
-              // save button
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colorScheme.primary,
-                    foregroundColor: Colors.white,
+                    backgroundColor: colorScheme.secondary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppRadius.full),
+                      side: BorderSide(color: colorScheme.primary),
                     ),
-                    elevation: 0,
+                    onPressed: () => _createCategory(context),
                   ),
-                  child: Text(isEditing ? 'Enregistrer' : 'Créer'),
-                ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: AppSpacing.lg),
+
+          // frequency
+          Text('Fréquence', style: textTheme.titleLarge),
+          const SizedBox(height: AppSpacing.sm),
+          ChoiceChipGroup(
+            options: const ['Tous les jours', 'Jours précis'],
+            selected:
+                frequencyType == 'daily' ? 'Tous les jours' : 'Jours précis',
+            onSelected: (value) => setState(() {
+              frequencyType = value == 'Tous les jours' ? 'daily' : 'weekly';
+            }),
+          ),
+          if (frequencyType == 'weekly') ...[
+            const SizedBox(height: AppSpacing.sm),
+            WeekdaySelector(
+              selectedDays: selectedDays,
+              onChanged: (days) => setState(() => selectedDays = days),
+            ),
+          ],
+          const SizedBox(height: AppSpacing.lg),
+
+          // quantifiable objective
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Objectif quantifiable', style: textTheme.titleLarge),
+              Switch(
+                value: isQuantifiable,
+                activeThumbColor: colorScheme.primary,
+                onChanged: (v) => setState(() => isQuantifiable = v),
               ),
             ],
           ),
-        ),
+          if (isQuantifiable) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () => setState(() {
+                    if (targetCount > 1) targetCount--;
+                  }),
+                  icon: const Icon(Icons.remove_circle_outline_rounded),
+                ),
+                Text('$targetCount', style: textTheme.titleLarge),
+                IconButton(
+                  onPressed: () => setState(() => targetCount++),
+                  icon: const Icon(Icons.add_circle_outline_rounded),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: AppTextField(
+                    controller: unitController,
+                    hintText: 'Unité (ex: verres, pages, min)',
+                  ),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: AppSpacing.xl),
+
+          // save button
+          PrimaryButton(
+            onPressed: _submit,
+            label: isEditing ? 'Enregistrer' : 'Créer',
+          ),
+        ],
       ),
     );
   }
