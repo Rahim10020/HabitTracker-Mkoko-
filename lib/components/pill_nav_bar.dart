@@ -32,7 +32,7 @@ class PillNavBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.secondary,
         borderRadius: radius,
-        border: BoxBorder.all(color: Colors.black),
+        border: BoxBorder.all(color: colorScheme.onSurface),
         boxShadow: [
           BoxShadow(
             color: colorScheme.shadow.withValues(alpha: 0.08),
