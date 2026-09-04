@@ -13,8 +13,8 @@ class AppColors {
   static const lightPrimaryContainer = Color(0xFFFFE8DE);
   static const lightSecondary = Color(0xFF0F9B8E);
   static const lightSuccess = Color(0xFF22C55E);
-  static const lightBackground = Color(0xFFFAFAF8);
-  static const lightSurface = Color(0xFFFFFFFF);
+  static const lightBackground = Color(0xFFF3F3F3);
+  static const lightSurface = Color(0xFFE8E8E8);
   static const lightTextPrimary = Color(0xFF1C1B1A);
   static const lightTextSecondary = Color(0xFF6B6963);
   static const lightBorder = Color(0xFFE7E5E0);
