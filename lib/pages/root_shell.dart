@@ -131,10 +131,11 @@ class _AddHabitButton extends StatelessWidget {
       ),
       child: Material(
         color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onPressed,
-          customBorder: const CircleBorder(),
-          child: const Icon(Icons.add_rounded, color: Colors.black),
+          borderRadius: BorderRadius.circular(16),
+          child: const Icon(Icons.add_rounded, color: Colors.white),
         ),
       ),
     );
