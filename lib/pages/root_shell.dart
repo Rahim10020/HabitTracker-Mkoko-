@@ -117,11 +117,10 @@ class _AddHabitButton extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      width: 54,
-      height: 54,
+      width: 60,
+      height: 60,
       decoration: BoxDecoration(
         color: colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -132,12 +131,11 @@ class _AddHabitButton extends StatelessWidget {
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(16),
           child: const AppSvgIcon(
             icon: AppIcon.add,
+            size: 16,
             color: Colors.white,
           ),
         ),

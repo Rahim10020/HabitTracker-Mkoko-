@@ -55,7 +55,7 @@ class AppSvgIcon extends StatefulWidget {
     super.key,
     required this.icon,
     this.color,
-    this.size = 16,
+    this.size = 24,
     this.strokeWidth,
   });
 
@@ -83,20 +83,20 @@ class _AppSvgIconState extends State<AppSvgIcon> {
 
   @override
   Widget build(BuildContext context) {
+    final color = widget.color ?? Theme.of(context).colorScheme.onSurface;
     return FutureBuilder<String>(
       future: _svgFuture,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const SizedBox.square(dimension: 24);
+          return SizedBox.square(dimension: widget.size);
         }
-        return SvgPicture.string(
-          snapshot.data!,
+        return SizedBox(
           width: widget.size,
           height: widget.size,
-          fit: BoxFit.contain,
-          colorFilter: ColorFilter.mode(
-            widget.color ?? Theme.of(context).colorScheme.onSurface,
-            BlendMode.srcIn,
+          child: SvgPicture.string(
+            snapshot.data!,
+            fit: BoxFit.contain,
+            colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
           ),
         );
       },

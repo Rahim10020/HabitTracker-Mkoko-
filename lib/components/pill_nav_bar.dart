@@ -32,7 +32,6 @@ class PillNavBar extends StatelessWidget {
       height: height,
       decoration: BoxDecoration(
         color: colorScheme.secondary,
-        borderRadius: radius,
         border: BoxBorder.all(color: colorScheme.onSurface, width: 2),
         boxShadow: [
           BoxShadow(
@@ -82,7 +81,6 @@ class _PillNavItem extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.full),
       child: SizedBox(
         width: 62,
         height: height,
@@ -94,7 +92,6 @@ class _PillNavItem extends StatelessWidget {
             height: 46,
             decoration: BoxDecoration(
               color: selected ? colorScheme.primary : Colors.transparent,
-              borderRadius: BorderRadius.circular(AppRadius.full),
             ),
             alignment: Alignment.center,
             child: AppSvgIcon(
