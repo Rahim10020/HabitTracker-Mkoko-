@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 class AppTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
+  final double borderWidth;
+  final Color? borderColor;
   final bool autofocus;
   final bool enabled;
   final bool obscureText;
@@ -21,6 +23,8 @@ class AppTextField extends StatelessWidget {
     super.key,
     required this.controller,
     required this.hintText,
+    this.borderWidth = 0,
+    this.borderColor,
     this.autofocus = false,
     this.enabled = true,
     this.obscureText = false,
@@ -49,9 +53,11 @@ class AppTextField extends StatelessWidget {
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.md,
         ),
-        border: const OutlineInputBorder(
-          borderSide: BorderSide.none,
-          borderRadius: BorderRadius.all(Radius.circular(AppRadius.md)),
+        border: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: borderColor ?? colorScheme.outline,
+            width: borderWidth,
+          ),
         ),
       ),
     );
