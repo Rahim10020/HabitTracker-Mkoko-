@@ -18,13 +18,9 @@ class EmptyHabitsView extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Container(
+          SizedBox(
             width: 88,
             height: 88,
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer,
-              shape: BoxShape.circle,
-            ),
             child: Icon(Icons.self_improvement_rounded,
                 size: 44, color: colorScheme.primary),
           ),
