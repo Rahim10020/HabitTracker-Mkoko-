@@ -145,6 +145,8 @@ class _HabitFormSheetState extends State<_HabitFormSheet> {
           AppTextField(
             controller: nameController,
             hintText: 'Nom de l\'habitude',
+            borderWidth: 2,
+            borderColor: colorScheme.primary,
             autofocus: !isEditing,
           ),
           const SizedBox(height: AppSpacing.lg),
