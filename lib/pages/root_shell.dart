@@ -139,7 +139,7 @@ class _AddHabitButton extends StatelessWidget {
               child: AppSvgIcon(
                 icon: AppIcon.add,
                 size: 20,
-                strokeWidth: 2,
+                strokeWidth: 1.5,
                 color: Colors.white,
               ),
             ),
