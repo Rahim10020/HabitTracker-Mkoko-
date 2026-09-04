@@ -1,3 +1,4 @@
+import 'package:R_HabitTracker/icons/app_icons.dart';
 import 'package:R_HabitTracker/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
 
@@ -22,12 +23,12 @@ class EmptyHabitsView extends StatelessWidget {
             width: 88,
             height: 88,
             child: Icon(Icons.self_improvement_rounded,
-                size: 44, color: colorScheme.primary),
+                size: 54, color: colorScheme.primary),
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
             'Aucune habitude pour l\'instant',
-            style: textTheme.headlineMedium,
+            style: textTheme.headlineLarge,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -39,8 +40,15 @@ class EmptyHabitsView extends StatelessWidget {
           const SizedBox(height: AppSpacing.xl),
           ElevatedButton.icon(
             onPressed: onCreatePressed,
-            icon: const Icon(Icons.add_rounded),
-            label: const Text('Créer une habitude'),
+            icon: const AppSvgIcon(
+              icon: AppIcon.add,
+              size: 16,
+              color: Colors.white,
+            ),
+            label: const Text(
+              'Créer une habitude',
+              style: TextStyle(fontSize: 16),
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: colorScheme.primary,
               foregroundColor: Colors.white,
