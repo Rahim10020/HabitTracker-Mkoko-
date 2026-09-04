@@ -2,16 +2,31 @@ import 'package:flutter/material.dart';
 
 class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
+  final Widget? titleWidget;
+  final VoidCallback? onSearchPressed;
 
-  const AppAppBar({super.key, this.title});
+  const AppAppBar({
+    super.key,
+    this.title,
+    this.titleWidget,
+    this.onSearchPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: title == null ? null : Text(title!),
+      title: titleWidget ?? (title == null ? null : Text(title!)),
       backgroundColor: Colors.transparent,
       foregroundColor: Theme.of(context).colorScheme.onSurface,
       elevation: 0,
+      actions: [
+        if (onSearchPressed != null)
+          IconButton(
+            onPressed: onSearchPressed,
+            tooltip: 'Rechercher',
+            icon: const Icon(Icons.search_rounded),
+          ),
+      ],
     );
   }
 

@@ -54,6 +54,7 @@ class _RootShellState extends State<RootShell> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
+      extendBody: true,
       backgroundColor: colorScheme.surface,
       body: Stack(
         children: [
@@ -70,36 +71,31 @@ class _RootShellState extends State<RootShell> {
             child: KeyedSubtree(key: ValueKey(_index), child: _pages[_index]),
           ),
           CelebrationOverlay(key: _celebrationKey),
-        ],
-      ),
-      bottomNavigationBar: Container(
-        color: colorScheme.surface,
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md,
-              AppSpacing.sm,
-              AppSpacing.md,
-              AppSpacing.sm,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                PillNavBar(
-                  selectedIndex: _index,
-                  onChanged: (i) => setState(() => _index = i),
-                  items: const [
-                    PillNavItem(icon: AppIcon.home),
-                    PillNavItem(icon: AppIcon.stats),
-                    PillNavItem(icon: AppIcon.settings),
-                  ],
-                ),
-                const SizedBox(width: AppSpacing.lg),
-                _AddHabitButton(onPressed: () => createNewHabit(context)),
-              ],
+          Positioned(
+            left: AppSpacing.md,
+            right: AppSpacing.md,
+            bottom: AppSpacing.md,
+            child: SafeArea(
+              top: false,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  PillNavBar(
+                    selectedIndex: _index,
+                    onChanged: (i) => setState(() => _index = i),
+                    items: const [
+                      PillNavItem(icon: AppIcon.home),
+                      PillNavItem(icon: AppIcon.stats),
+                      PillNavItem(icon: AppIcon.settings),
+                    ],
+                  ),
+                  const SizedBox(width: AppSpacing.lg),
+                  _AddHabitButton(onPressed: () => createNewHabit(context)),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

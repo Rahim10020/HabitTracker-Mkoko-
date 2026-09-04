@@ -1,4 +1,5 @@
 import 'package:R_HabitTracker/components/my_heat_map.dart';
+import 'package:R_HabitTracker/components/reminder_sheet.dart';
 import 'package:R_HabitTracker/database/app_database.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
 import 'package:R_HabitTracker/theme/app_spacing.dart';
@@ -71,6 +72,37 @@ class HabitDetailPage extends StatelessWidget {
                                 ?.copyWith(color: category.color),
                           ),
                         ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () async {
+                        TimeOfDay? initialTime;
+                        if (habit!.reminderTime != null) {
+                          final parts = habit.reminderTime!.split(':');
+                          initialTime = TimeOfDay(
+                            hour: int.parse(parts[0]),
+                            minute: int.parse(parts[1]),
+                          );
+                        }
+                        final result = await showReminderSheet(
+                          context,
+                          initialTime: initialTime,
+                        );
+                        if (result != null && context.mounted) {
+                          await habitDatabase.setReminder(
+                            habit.id,
+                            result.enabled ? result.time : null,
+                          );
+                        }
+                      },
+                      tooltip: 'Rappel',
+                      icon: Icon(
+                        habit.reminderTime != null
+                            ? Icons.notifications_active_rounded
+                            : Icons.notifications_none_rounded,
+                        color: habit.reminderTime != null
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],

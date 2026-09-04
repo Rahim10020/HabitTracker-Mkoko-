@@ -1,5 +1,6 @@
 import 'package:R_HabitTracker/components/confirm_delete_sheet.dart';
 import 'package:R_HabitTracker/components/app_app_bar.dart';
+import 'package:R_HabitTracker/components/app_text_field.dart';
 import 'package:R_HabitTracker/components/empty_habits_view.dart';
 import 'package:R_HabitTracker/components/habit_form_sheet.dart';
 import 'package:R_HabitTracker/components/home_summary_header.dart';
@@ -21,6 +22,22 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final _searchController = TextEditingController();
+  bool _isSearching = false;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      _isSearching = !_isSearching;
+      if (!_isSearching) _searchController.clear();
+    });
+  }
+
   @override
   void initState() {
     // we gonna read existing habits (and custom categories) on app startup
@@ -104,19 +121,39 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppAppBar(),
+      appBar: AppAppBar(
+        titleWidget: _isSearching
+            ? Row(
+                children: [
+                  Expanded(
+                    child: AppTextField(
+                      controller: _searchController,
+                      hintText: 'Rechercher une habitude',
+                      autofocus: true,
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _toggleSearch,
+                    tooltip: 'Fermer la recherche',
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              )
+            : null,
+        onSearchPressed: _isSearching ? null : _toggleSearch,
+      ),
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Consumer<HabitDatabase>(
         builder: (context, habitDatabase, _) {
           if (habitDatabase.currentHabits.isEmpty) {
             return EmptyHabitsView(onCreatePressed: createNewHabit);
           }
-          return ListView(
+          return Column(
             children: [
               _buildSummaryHeader(habitDatabase),
               _buildHeatMap(habitDatabase),
-              _buildHabitList(habitDatabase),
-              const SizedBox(height: 100),
+              Expanded(child: _buildHabitList(habitDatabase)),
             ],
           );
         },
@@ -152,18 +189,31 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHabitList(HabitDatabase habitDatabase) {
-    List<Habit> currentHabits = habitDatabase.currentHabits;
+    final query = _searchController.text.trim().toLowerCase();
+    final currentHabits = habitDatabase.currentHabits
+        .where((habit) =>
+            query.isEmpty || habit.name.toLowerCase().contains(query))
+        .toList();
     final colorScheme = Theme.of(context).colorScheme;
+    if (currentHabits.isEmpty) {
+      return Center(
+        child: Text(
+          'Aucune habitude trouvée',
+          style: Theme.of(context).textTheme.bodyLarge,
+        ),
+      );
+    }
     return ReorderableListView.builder(
       itemCount: currentHabits.length,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 100),
       // only the explicit grip icon (below) starts a drag — the default
       // whole-tile long-press handle is turned off so it doesn't fight
       // with the tile's Slidable swipe-to-edit/delete gesture.
       buildDefaultDragHandles: false,
-      onReorderItem: (oldIndex, newIndex) =>
-          habitDatabase.reorderHabits(oldIndex, newIndex),
+      onReorderItem: query.isEmpty
+          ? (oldIndex, newIndex) =>
+              habitDatabase.reorderHabits(oldIndex, newIndex)
+          : (_, __) {},
       itemBuilder: (context, index) {
         final habit = currentHabits[index];
         final completedDays = habitDatabase.completedDaysFor(habit.id);

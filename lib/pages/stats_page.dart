@@ -62,7 +62,12 @@ class _StatsPageState extends State<StatsPage> {
             final weekRate = _weeklyCompletionRate(habitDatabase);
 
             return ListView(
-              padding: const EdgeInsets.all(AppSpacing.xl),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                AppSpacing.xl,
+                AppSpacing.xl,
+                100,
+              ),
               children: [
                 Text('Statistiques', style: textTheme.headlineMedium),
                 const SizedBox(height: AppSpacing.lg),

@@ -103,101 +103,114 @@ class _MyHabitTileState extends State<MyHabitTile>
               colorScheme.outline.withValues(alpha: widget.isCompleted ? 0 : 1),
         ),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Stack(
         children: [
-          if (widget.dragHandle != null) ...[
-            widget.dragHandle!,
-            const SizedBox(width: AppSpacing.xs),
-          ],
-          // category icon
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: widget.category.color.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          // name + meta (+ progress bar for quantifiable habits)
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          Padding(
+            padding: const EdgeInsets.only(right: 44),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  widget.text,
-                  style: textTheme.bodyLarge?.copyWith(
-                    decoration:
-                        widget.isCompleted ? TextDecoration.lineThrough : null,
-                    color: widget.isCompleted
-                        ? colorScheme.onSurfaceVariant
-                        : colorScheme.onSurface,
+                if (widget.dragHandle != null) ...[
+                  widget.dragHandle!,
+                  const SizedBox(width: AppSpacing.xs),
+                ],
+                // category icon
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: widget.category.color.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    if (widget.streak > 0) ...[
-                      const Icon(Icons.local_fire_department_rounded,
-                          size: 14, color: Color(0xFFF97316)),
-                      const SizedBox(width: 2),
-                      Text('${widget.streak}', style: textTheme.labelSmall),
-                      const SizedBox(width: AppSpacing.sm),
-                    ],
-                    GestureDetector(
-                      onTap: widget.onReminderTap,
-                      child: Row(
+                const SizedBox(width: AppSpacing.md),
+                // name + meta (+ progress bar for quantifiable habits)
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.text,
+                        style: textTheme.bodyLarge?.copyWith(
+                          decoration: widget.isCompleted
+                              ? TextDecoration.lineThrough
+                              : null,
+                          color: widget.isCompleted
+                              ? colorScheme.onSurfaceVariant
+                              : colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
                         children: [
-                          Icon(
-                            widget.reminderTime != null
-                                ? Icons.notifications_active_rounded
-                                : Icons.notifications_none_rounded,
-                            size: 14,
-                            color: widget.reminderTime != null
-                                ? colorScheme.primary
-                                : colorScheme.onSurfaceVariant,
-                          ),
-                          if (widget.reminderTime != null) ...[
+                          if (widget.streak > 0) ...[
+                            const Icon(Icons.local_fire_department_rounded,
+                                size: 14, color: Color(0xFFF97316)),
                             const SizedBox(width: 2),
-                            Text(widget.reminderTime!,
+                            Text('${widget.streak}',
                                 style: textTheme.labelSmall),
+                            const SizedBox(width: AppSpacing.sm),
                           ],
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                if (_isQuantifiable) ...[
-                  const SizedBox(height: AppSpacing.xs),
-                  AnimatedProgressIndicator(
-                    progress: widget.currentValue / widget.targetCount,
-                    minHeight: 5,
-                    duration: const Duration(milliseconds: 350),
-                    backgroundColor: colorScheme.outline.withValues(alpha: 0.3),
-                    valueColor: widget.isCompleted
-                        ? AppColors.lightSuccess
-                        : colorScheme.primary,
+                      if (_isQuantifiable) ...[
+                        const SizedBox(height: AppSpacing.xs),
+                        AnimatedProgressIndicator(
+                          progress: widget.currentValue / widget.targetCount,
+                          minHeight: 5,
+                          duration: const Duration(milliseconds: 350),
+                          backgroundColor:
+                              colorScheme.outline.withValues(alpha: 0.3),
+                          valueColor: widget.isCompleted
+                              ? AppColors.lightSuccess
+                              : colorScheme.primary,
+                        ),
+                      ],
+                    ],
                   ),
-                ],
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                // trailing control: check toggle (simple) or +/- stepper (quantifiable)
+                _isQuantifiable
+                    ? _ProgressStepper(
+                        currentValue: widget.currentValue,
+                        targetCount: widget.targetCount,
+                        unit: widget.unit,
+                        isCompleted: widget.isCompleted,
+                        onIncrement: widget.onIncrement,
+                        onDecrement: widget.onDecrement,
+                      )
+                    : _CompletionCheck(
+                        isCompleted: widget.isCompleted,
+                        onTap: () =>
+                            widget.onChanged?.call(!widget.isCompleted),
+                      ),
               ],
             ),
           ),
-          const SizedBox(width: AppSpacing.sm),
-          // trailing control: check toggle (simple) or +/- stepper (quantifiable)
-          _isQuantifiable
-              ? _ProgressStepper(
-                  currentValue: widget.currentValue,
-                  targetCount: widget.targetCount,
-                  unit: widget.unit,
-                  isCompleted: widget.isCompleted,
-                  onIncrement: widget.onIncrement,
-                  onDecrement: widget.onDecrement,
-                )
-              : _CompletionCheck(
-                  isCompleted: widget.isCompleted,
-                  onTap: () => widget.onChanged?.call(!widget.isCompleted),
+          Positioned(
+            top: -AppSpacing.sm,
+            right: -AppSpacing.sm,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: widget.onReminderTap,
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: Center(
+                  child: Icon(
+                    widget.reminderTime != null
+                        ? Icons.notifications_active_rounded
+                        : Icons.notifications_none_rounded,
+                    size: 18,
+                    color: widget.reminderTime != null
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant,
+                  ),
                 ),
+              ),
+            ),
+          ),
         ],
       ),
     );
