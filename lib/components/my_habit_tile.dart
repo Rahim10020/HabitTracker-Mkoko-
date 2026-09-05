@@ -106,7 +106,7 @@ class _MyHabitTileState extends State<MyHabitTile>
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.only(right: 44),
+            padding: const EdgeInsets.only(right: 14),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
