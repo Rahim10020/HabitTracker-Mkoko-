@@ -1,6 +1,5 @@
 import 'package:R_HabitTracker/components/confirm_delete_sheet.dart';
 import 'package:R_HabitTracker/components/app_app_bar.dart';
-import 'package:R_HabitTracker/components/app_text_field.dart';
 import 'package:R_HabitTracker/components/empty_habits_view.dart';
 import 'package:R_HabitTracker/components/habit_form_sheet.dart';
 import 'package:R_HabitTracker/components/home_summary_header.dart';
@@ -9,7 +8,6 @@ import 'package:R_HabitTracker/components/my_heat_map.dart';
 import 'package:R_HabitTracker/components/reminder_sheet.dart';
 import 'package:R_HabitTracker/database/app_database.dart';
 import 'package:R_HabitTracker/database/habit_database.dart';
-import 'package:R_HabitTracker/icons/app_icons.dart';
 import 'package:R_HabitTracker/utils/habit_util.dart';
 import 'package:R_HabitTracker/utils/streak_util.dart';
 import 'package:flutter/material.dart';
@@ -23,22 +21,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final _searchController = TextEditingController();
-  bool _isSearching = false;
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  void _toggleSearch() {
-    setState(() {
-      _isSearching = !_isSearching;
-      if (!_isSearching) _searchController.clear();
-    });
-  }
-
   @override
   void initState() {
     // we gonna read existing habits (and custom categories) on app startup
@@ -122,28 +104,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppAppBar(
-        titleWidget: _isSearching
-            ? Row(
-                children: [
-                  Expanded(
-                    child: AppTextField(
-                      controller: _searchController,
-                      hintText: 'Rechercher une habitude',
-                      autofocus: true,
-                      onChanged: (_) => setState(() {}),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: _toggleSearch,
-                    tooltip: 'Fermer la recherche',
-                    icon: const AppSvgIcon(icon: AppIcon.close),
-                  ),
-                ],
-              )
-            : null,
-        onSearchPressed: _isSearching ? null : _toggleSearch,
-      ),
+      appBar: const AppAppBar(),
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Consumer<HabitDatabase>(
         builder: (context, habitDatabase, _) {
@@ -190,20 +151,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHabitList(HabitDatabase habitDatabase) {
-    final query = _searchController.text.trim().toLowerCase();
-    final currentHabits = habitDatabase.currentHabits
-        .where((habit) =>
-            query.isEmpty || habit.name.toLowerCase().contains(query))
-        .toList();
+    final currentHabits = habitDatabase.currentHabits;
     final colorScheme = Theme.of(context).colorScheme;
-    if (currentHabits.isEmpty) {
-      return Center(
-        child: Text(
-          'Aucune habitude trouvée',
-          style: Theme.of(context).textTheme.bodyLarge,
-        ),
-      );
-    }
     return ReorderableListView.builder(
       itemCount: currentHabits.length,
       padding: const EdgeInsets.only(bottom: 100),
@@ -211,10 +160,8 @@ class _HomePageState extends State<HomePage> {
       // whole-tile long-press handle is turned off so it doesn't fight
       // with the tile's Slidable swipe-to-edit/delete gesture.
       buildDefaultDragHandles: false,
-      onReorderItem: query.isEmpty
-          ? (oldIndex, newIndex) =>
-              habitDatabase.reorderHabits(oldIndex, newIndex)
-          : (_, __) {},
+      onReorderItem: (oldIndex, newIndex) =>
+          habitDatabase.reorderHabits(oldIndex, newIndex),
       itemBuilder: (context, index) {
         final habit = currentHabits[index];
         final completedDays = habitDatabase.completedDaysFor(habit.id);
