@@ -202,7 +202,7 @@ class _MyHabitTileState extends State<MyHabitTile>
                     widget.reminderTime != null
                         ? Icons.notifications_active_rounded
                         : Icons.notifications_none_rounded,
-                    size: 18,
+                    size: 32,
                     color: widget.reminderTime != null
                         ? colorScheme.primary
                         : colorScheme.onSurfaceVariant,

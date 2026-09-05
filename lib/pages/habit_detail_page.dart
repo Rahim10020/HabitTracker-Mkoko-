@@ -103,6 +103,7 @@ class HabitDetailPage extends StatelessWidget {
                         color: habit.reminderTime != null
                             ? colorScheme.primary
                             : colorScheme.onSurfaceVariant,
+                        size: 32,
                       ),
                     ),
                   ],
