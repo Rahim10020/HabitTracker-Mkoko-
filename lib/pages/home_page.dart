@@ -111,12 +111,14 @@ class _HomePageState extends State<HomePage> {
           if (habitDatabase.currentHabits.isEmpty) {
             return EmptyHabitsView(onCreatePressed: createNewHabit);
           }
-          return Column(
-            children: [
-              _buildSummaryHeader(habitDatabase),
-              _buildHeatMap(habitDatabase),
-              Expanded(child: _buildHabitList(habitDatabase)),
-            ],
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildSummaryHeader(habitDatabase),
+                _buildHeatMap(habitDatabase),
+                _buildHabitList(habitDatabase),
+              ],
+            ),
           );
         },
       ),
@@ -156,6 +158,8 @@ class _HomePageState extends State<HomePage> {
     return ReorderableListView.builder(
       itemCount: currentHabits.length,
       padding: const EdgeInsets.only(bottom: 100),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       // only the explicit grip icon (below) starts a drag — the default
       // whole-tile long-press handle is turned off so it doesn't fight
       // with the tile's Slidable swipe-to-edit/delete gesture.

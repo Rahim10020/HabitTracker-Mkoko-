@@ -171,6 +171,31 @@ class _MyHabitTileState extends State<MyHabitTile>
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 // trailing control: check toggle (simple) or +/- stepper (quantifiable)
+
+                Positioned(
+                  top: -AppSpacing.sm,
+                  right: -AppSpacing.sm,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: widget.onReminderTap,
+                    child: SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: Center(
+                        child: Icon(
+                          widget.reminderTime != null
+                              ? Icons.notifications_active_rounded
+                              : Icons.notifications_none_rounded,
+                          size: 32,
+                          color: widget.reminderTime != null
+                              ? colorScheme.primary
+                              : colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.xl),
                 _isQuantifiable
                     ? _ProgressStepper(
                         currentValue: widget.currentValue,
@@ -186,29 +211,6 @@ class _MyHabitTileState extends State<MyHabitTile>
                             widget.onChanged?.call(!widget.isCompleted),
                       ),
               ],
-            ),
-          ),
-          Positioned(
-            top: -AppSpacing.sm,
-            right: -AppSpacing.sm,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: widget.onReminderTap,
-              child: SizedBox(
-                width: 40,
-                height: 40,
-                child: Center(
-                  child: Icon(
-                    widget.reminderTime != null
-                        ? Icons.notifications_active_rounded
-                        : Icons.notifications_none_rounded,
-                    size: 32,
-                    color: widget.reminderTime != null
-                        ? colorScheme.primary
-                        : colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
             ),
           ),
         ],
